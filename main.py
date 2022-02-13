@@ -1,5 +1,8 @@
-import configparser
+from Config import Config
+from Telegram import Telegram
 
-config = configparser.RawConfigParser()
-config.read('example.cfg')
+config = Config()
 
+telegram_token = config.read_from_config("TELEGRAM", "token")
+
+telegram = Telegram(telegram_token)
