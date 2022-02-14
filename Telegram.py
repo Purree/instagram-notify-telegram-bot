@@ -13,34 +13,47 @@ class Telegram:
         self.updater.start_polling()
         self.updater.idle()
 
-    def message_handler(self, update: Update, context: CallbackContext) -> None:
-        print(update)
-        print(update.message.text)
-        if update.message.text == 'Ку':
-            update.message.reply_text(f'Hello {update.effective_user.first_name}')
-        else:
-            self.activate_keyboard(update, context)
+    def start_command_handler(self, update: Update, context: CallbackContext) -> None:
+        update.message.reply_text("Здравствуйте!", reply_markup=self.generate_keyboard())
 
     def activate_handlers(self):
-        self.updater.dispatcher.add_handler(CommandHandler('start', self.activate_keyboard))
+        # Start command
+        self.updater.dispatcher.add_handler(CommandHandler('start', self.start_command_handler))
 
-        self.updater.dispatcher\
+        # Check user subscriptions
+        self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.text(self.main_keyboard_buttons[0][0]), self.show_user_subscriptions))
 
-        self.updater.dispatcher\
-            .add_handler(MessageHandler(Filters.text(self.main_keyboard_buttons[0][1]), self.subscribe_user))
+        # Writes information on how to subscribe an account
+        self.updater.dispatcher \
+            .add_handler(MessageHandler(Filters.text(self.main_keyboard_buttons[0][1]), self.write_subscription_guide))
 
-    def activate_keyboard(self, update: Update, context: CallbackContext):
-        reply_markup = ReplyKeyboardMarkup(self.main_keyboard_buttons,
-                                           one_time_keyboard=False,
-                                           resize_keyboard=True)
+        # Subscribe an account
+        self.updater.dispatcher \
+            .add_handler(
+                MessageHandler(
+                    Filters.regex(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)'),
+                    self.subscribe_user
+                )
+            )
 
-        update.message.reply_text("Здравствуйте!", reply_markup=reply_markup)
+        # Unknown command
+        self.updater.dispatcher \
+            .add_handler(MessageHandler(Filters.all, self.write_unknown_command_exception))
+
+    def generate_keyboard(self):
+        return ReplyKeyboardMarkup(self.main_keyboard_buttons,
+                                   one_time_keyboard=False,
+                                   resize_keyboard=True)
+
+    def write_unknown_command_exception(self, update: Update, context: CallbackContext):
+        update.message.reply_text('Неизвестная команда ¯\\_(ツ)_/¯')
 
     def show_user_subscriptions(self, update: Update, context: CallbackContext):
         update.message.reply_text('TBA')
 
-    def subscribe_user(self, update: Update, context: CallbackContext):
-        reply_markup = ReplyKeyboardRemove()
+    def write_subscription_guide(self, update: Update, context: CallbackContext):
+        update.message.reply_text('Пришлите ссылку на инстаграм аккаунт 🥺')
 
-        update.message.reply_text('Пришлите ссылку на инстаграм аккаунт', reply_markup=reply_markup)
+    def subscribe_user(self, update: Update, context: CallbackContext):
+        update.message.reply_text('Пока не реализовано')
