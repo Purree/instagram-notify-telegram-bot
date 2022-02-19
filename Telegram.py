@@ -47,13 +47,13 @@ class Telegram:
                                    resize_keyboard=True)
 
     def write_unknown_command_exception(self, update: Update, context: CallbackContext):
-        update.message.reply_text('Неизвестная команда ¯\\_(ツ)_/¯')
+        update.message.reply_text('Неизвестная команда ¯\\_(ツ)_/¯', reply_markup=self.generate_keyboard())
 
     def show_user_subscriptions(self, update: Update, context: CallbackContext):
-        update.message.reply_text('TBA')
+        update.message.reply_text('TBA', reply_markup=self.generate_keyboard())
 
     def write_subscription_guide(self, update: Update, context: CallbackContext):
         update.message.reply_text('Пришлите ссылку на инстаграм аккаунт 🥺')
 
     def subscribe_user(self, update: Update, context: CallbackContext):
-        update.message.reply_text('Пока не реализовано')
+        update.message.reply_text('Пока не реализовано', reply_markup=self.generate_keyboard())
