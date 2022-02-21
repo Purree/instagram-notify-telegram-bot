@@ -5,6 +5,9 @@ config = Config()
 
 database_parameters = config.get_all_section_parameters("DATABASE")
 
+if database_parameters['databasename'] == '':
+    raise Exception('Cannot use empty database')
+
 try:
     database_parameters_without_database = database_parameters.copy()
     database_parameters_without_database['databasename'] = ''
@@ -17,6 +20,23 @@ else:
     del full_access_database, database_parameters_without_database
 
 database = Database(database_parameters)
+
+if database.execute_custom_query(f'SELECT count(*) AS TOTALNUMBEROFTABLES '
+                                 f'FROM INFORMATION_SCHEMA.TABLES '
+                                 f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\''
+                                 )[0][0] != 0:
+    clear_database = input("In database already exists tables. Delete all tables? (y/n) ")
+    if clear_database == 'y':
+        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=0;')
+        all_tables = database.execute_custom_query(f'SELECT table_schema AS database_name, table_name '
+                                                   f'FROM INFORMATION_SCHEMA.TABLES '
+                                                   f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\'')
+
+        for table in all_tables:
+            database.execute_custom_query('DROP TABLE ' + table[1])
+            print(table[1], 'in', table[0], 'deleted')
+
+        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=1;')
 
 database.execute_custom_query('CREATE TABLE users ('
                               'telegram_id INT UNSIGNED PRIMARY KEY NOT NULL'

@@ -24,3 +24,4 @@ class Database:
     def execute_custom_query(self, command):
         print(self.cursor)
         self.cursor.execute(command)
+        return self.cursor.fetchall()
