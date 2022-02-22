@@ -1,10 +1,13 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
+from UserController import UserController
+
 
 class Telegram:
     def __init__(self, token):
         self.updater = Updater(token)
+        self.controller = UserController()
 
         self.main_keyboard_buttons = [['Мои подписки', 'Подписаться']]
 
@@ -14,7 +17,10 @@ class Telegram:
         self.updater.idle()
 
     def start_command_handler(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text("Здравствуйте!", reply_markup=self.generate_keyboard())
+        if self.controller.create_new_user(update.message.from_user.id):
+            update.message.reply_text("Здравствуйте!", reply_markup=self.generate_keyboard())
+        else:
+            update.message.reply_text("И снова здравствуйте!", reply_markup=self.generate_keyboard())
 
     def activate_handlers(self):
         # Start command

@@ -28,3 +28,14 @@ class Database:
             self.connection.commit()
 
         return self.cursor.fetchall()
+
+    def add_new_user(self, telegram_id):
+        self.cursor.execute("""SELECT * FROM users WHERE telegram_id = %s""", [telegram_id])
+
+        if self.cursor.fetchone() is None:
+            self.cursor.execute("""INSERT INTO users VALUES (%s)""", [telegram_id])
+
+            self.connection.commit()
+            return True
+
+        return False
