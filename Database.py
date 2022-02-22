@@ -21,7 +21,10 @@ class Database:
 
     # Method what will be called if table isn't exists
     # Method must be called only from places where user cannot change something
-    def execute_custom_query(self, command):
+    def execute_custom_query(self, command, commit=False):
         print(self.cursor)
         self.cursor.execute(command)
+        if commit:
+            self.connection.commit()
+
         return self.cursor.fetchall()

@@ -21,6 +21,8 @@ else:
 
 database = Database(database_parameters)
 
+database.execute_custom_query('INSERT INTO tariffs (count, cost, duration, name) VALUES (5, null, null, "default");')
+
 if database.execute_custom_query(f'SELECT count(*) AS TOTALNUMBEROFTABLES '
                                  f'FROM INFORMATION_SCHEMA.TABLES '
                                  f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\''
@@ -60,7 +62,9 @@ database.execute_custom_query('CREATE TABLE tariffs ('
                               'id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,'
                               'count INT UNSIGNED,'  # count of bloggers subscriptions, null = infinitive
                               'cost INT UNSIGNED,'  # cost of tariff, null = free
-                              'duration INT(14) UNSIGNED'  # null = infinitive
+                              'duration INT(14) UNSIGNED,'  # null = infinitive
+                              'name varchar(255) NOT NULL ,'
+                              'description text'
                               ')')
 
 database.execute_custom_query('CREATE TABLE user_tariffs ('
@@ -72,3 +76,6 @@ database.execute_custom_query('CREATE TABLE user_tariffs ('
                               'FOREIGN KEY (user_id)  REFERENCES users (telegram_id)'
                               'ON DELETE CASCADE'
                               ')')
+
+database.execute_custom_query('INSERT INTO tariffs (count, cost, duration, name) VALUES (5, null, null, "default");',
+                              True)
