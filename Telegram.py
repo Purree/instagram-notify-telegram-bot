@@ -1,5 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
+import re
 
 from UserController import UserController
 
@@ -62,4 +63,9 @@ class Telegram:
         update.message.reply_text('Пришлите ссылку на инстаграм аккаунт 🥺')
 
     def subscribe_user(self, update: Update, context: CallbackContext):
+        blogger_short_name = re.match\
+            (r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)', update.message.text)\
+            .group(1)
+
+        self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
         update.message.reply_text('Пока не реализовано', reply_markup=self.generate_keyboard())
