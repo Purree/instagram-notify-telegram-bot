@@ -71,7 +71,6 @@ database.execute_custom_query('CREATE TABLE user_tariffs ('
                               'user_id INT UNSIGNED NOT NULL,'
                               'tariff_id INT UNSIGNED NOT NULL,'
                               'started_at TIMESTAMP NOT NULL,'
-                              'duration INT(10),'  # null = infinitive
                               'FOREIGN KEY (tariff_id)  REFERENCES tariffs (id),'
                               'FOREIGN KEY (user_id)  REFERENCES users (telegram_id)'
                               'ON DELETE CASCADE'

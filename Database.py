@@ -1,4 +1,5 @@
 import mysql.connector
+import time
 
 
 class Database:
@@ -93,3 +94,19 @@ class Database:
 
         self.connection.commit()
         return True
+
+    def add_tariff_to_user(self, tariff_id, telegram_id, started_at=time.time()):
+        self.cursor.execute("""INSERT INTO user_tariffs VALUES (%s, %s, %s)""", [telegram_id, tariff_id, started_at])
+
+    def get_user_tariffs(self, telegram_id):
+        self.cursor.execute("""SELECT * FROM user_tariffs 
+                               INNER JOIN tariffs ON tariff_id = tariffs.id WHERE user_id = %s""",
+                            [telegram_id])
+
+        tariff = self.cursor.fetchone()
+
+        if tariff is None:
+            self.add_tariff_to_user(1, telegram_id)
+            return self.get_user_tariffs(telegram_id)
+        
+        return tariff

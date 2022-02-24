@@ -9,13 +9,13 @@ class UserController:
         self.instagram_controller = InstagramController()
 
     def create_new_user(self, telegram_id):
-        self.database.add_new_user(telegram_id)
+        return self.database.add_new_user(telegram_id)
 
     def subscribe_user(self, telegram_id, blogger_short_name):
         blogger_data = self.database.search_blogger_in_database(blogger_short_name)
 
         if blogger_data is not None:
-            self.database.subscribe_user(telegram_id, blogger_data['instagram_id'])
+            self.database.subscribe_user(telegram_id, blogger_data[0])
         else:
             blogger_info = self.instagram_controller.get_blogger_main_info(blogger_short_name)
             blogger_data = [
@@ -26,4 +26,7 @@ class UserController:
             ]
             self.database.add_new_blogger(blogger_data)
             self.database.subscribe_user(telegram_id, blogger_data[0])
+
+    def get_active_user_tariffs(self, telegram_id):
+        self.database.get_user_tariffs(telegram_id)
 
