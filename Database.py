@@ -61,7 +61,6 @@ class Database:
             return self.cursor.fetchone()
 
         if blogger_short_name is not None:
-            # FIXME: DON'T WORK
             self.cursor.execute("""SELECT * FROM bloggers WHERE short_name = %s""", [blogger_short_name])
 
             return self.cursor.fetchone()
@@ -122,4 +121,4 @@ class Database:
     def get_user_subscriptions(self, telegram_id):
         self.cursor.execute("""SELECT * FROM user_subscriptions WHERE user_id = %s""", [telegram_id])
 
-        return self.cursor.fetchone()
+        return self.cursor.fetchall()
