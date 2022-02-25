@@ -12,6 +12,21 @@ class UserController:
         return self.database.add_new_user(telegram_id)
 
     def subscribe_user(self, telegram_id, blogger_short_name):
+        user_tariffs = self.get_active_user_tariffs(telegram_id)
+        if user_tariffs is None:
+            self.add_tariff_to_user(1, telegram_id)
+
+            user_tariffs = self.get_active_user_tariffs(telegram_id)
+
+        subscriptions_count = user_tariffs[0][4]
+
+        for tariff in user_tariffs:
+            if tariff[4] > subscriptions_count:
+                subscriptions_count = tariff[4]
+
+        if len(self.get_user_subscriptions(telegram_id)) >= subscriptions_count:
+            return False
+
         blogger_data = self.database.search_blogger_in_database(blogger_short_name)
 
         if blogger_data is not None:
@@ -28,5 +43,13 @@ class UserController:
             self.database.subscribe_user(telegram_id, blogger_data[0])
 
     def get_active_user_tariffs(self, telegram_id):
-        self.database.get_user_tariffs(telegram_id)
+        return self.database.get_valid_user_tariffs(telegram_id)
 
+    def get_user_tariffs(self, telegram_id):
+        return self.database.get_user_tariffs(telegram_id)
+
+    def get_user_subscriptions(self, telegram_id):
+        return self.database.get_user_subscriptions(telegram_id)
+
+    def add_tariff_to_user(self, tariff_id, telegram_id):
+        self.database.add_tariff_to_user(tariff_id=tariff_id, telegram_id=telegram_id)

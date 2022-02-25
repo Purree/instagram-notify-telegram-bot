@@ -62,7 +62,7 @@ database.execute_custom_query('CREATE TABLE tariffs ('
                               'id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,'
                               'count INT UNSIGNED,'  # count of bloggers subscriptions, null = infinitive
                               'cost INT UNSIGNED,'  # cost of tariff, null = free
-                              'duration INT(14) UNSIGNED,'  # null = infinitive
+                              'duration INT(14) UNSIGNED,'  # null = infinitive, value - seconds
                               'name varchar(255) NOT NULL ,'
                               'description text'
                               ')')

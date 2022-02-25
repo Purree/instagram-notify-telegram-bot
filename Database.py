@@ -61,6 +61,7 @@ class Database:
             return self.cursor.fetchone()
 
         if blogger_short_name is not None:
+            # FIXME: DON'T WORK
             self.cursor.execute("""SELECT * FROM bloggers WHERE short_name = %s""", [blogger_short_name])
 
             return self.cursor.fetchone()
@@ -98,15 +99,27 @@ class Database:
     def add_tariff_to_user(self, tariff_id, telegram_id, started_at=time.time()):
         self.cursor.execute("""INSERT INTO user_tariffs VALUES (%s, %s, %s)""", [telegram_id, tariff_id, started_at])
 
+    def get_valid_user_tariffs(self, telegram_id):
+        self.cursor.execute("""SELECT * FROM user_tariffs 
+                                       INNER JOIN tariffs ON tariff_id = tariffs.id 
+                                       WHERE user_id = %s AND (tariffs.duration IS NULL 
+                                       OR UNIX_TIMESTAMP(started_at) + tariffs.duration >= UNIX_TIMESTAMP(now()))""",
+                            [telegram_id])
+
+        tariffs = self.cursor.fetchall()
+
+        return tariffs
+
     def get_user_tariffs(self, telegram_id):
         self.cursor.execute("""SELECT * FROM user_tariffs 
                                INNER JOIN tariffs ON tariff_id = tariffs.id WHERE user_id = %s""",
                             [telegram_id])
 
-        tariff = self.cursor.fetchone()
-
-        if tariff is None:
-            self.add_tariff_to_user(1, telegram_id)
-            return self.get_user_tariffs(telegram_id)
+        tariffs = self.cursor.fetchall()
         
-        return tariff
+        return tariffs
+
+    def get_user_subscriptions(self, telegram_id):
+        self.cursor.execute("""SELECT * FROM user_subscriptions WHERE user_id = %s""", [telegram_id])
+
+        return self.cursor.fetchone()
