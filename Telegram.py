@@ -67,5 +67,13 @@ class Telegram:
             (r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)', update.message.text)\
             .group(1)
 
-        self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
-        update.message.reply_text('Пока не реализовано', reply_markup=self.generate_keyboard())
+        user_subscription = self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
+
+        if not user_subscription.isSuccess:
+            update.message.reply_text('Возникли некоторые трудности. ' + user_subscription.errorMessage,
+                                      reply_markup=self.generate_keyboard())
+        else:
+            update.message.reply_text('Вы успешно подписаны на ' + user_subscription.returnValue,
+                                      reply_markup=self.generate_keyboard())
+
+

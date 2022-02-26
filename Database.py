@@ -2,6 +2,8 @@ from datetime import datetime
 
 import mysql.connector
 
+from FunctionResult import FunctionResult
+
 
 class Database:
     def __init__(self, parameters):
@@ -78,13 +80,13 @@ class Database:
 
     def subscribe_user(self, telegram_id, blogger_short_name):
         if self.check_is_user_subscribe_for_blogger(telegram_id, blogger_short_name):
-            return False
+            return FunctionResult.error('Вы уже подписаны этого пользователя')
 
         self.cursor.execute("""INSERT INTO user_subscriptions VALUES (%s, %s)""", [telegram_id, blogger_short_name])
 
         self.connection.commit()
 
-        return True
+        return FunctionResult.success()
 
     # blogger_data - array of blogger id, blogger short name, posts count, last post id
     def add_new_blogger(self, blogger_data):
