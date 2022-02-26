@@ -43,7 +43,7 @@ database.execute_custom_query('CREATE TABLE users ('
                               ')')
 
 database.execute_custom_query('CREATE TABLE bloggers ('
-                              'instagram_id INT UNSIGNED PRIMARY KEY NOT NULL,'
+                              'instagram_id BIGINT UNSIGNED PRIMARY KEY NOT NULL,'
                               'short_name varchar(30) NOT NULL UNIQUE,'  # unique identifier that the user uses 
                               'posts_count int(6) DEFAULT 0 NOT NULL,'
                               'last_post_id BIGINT NOT NULL'
@@ -51,7 +51,7 @@ database.execute_custom_query('CREATE TABLE bloggers ('
 
 database.execute_custom_query('CREATE TABLE user_subscriptions ('
                               'user_id INT UNSIGNED NOT NULL,'
-                              'blogger_id INT UNSIGNED NOT NULL,'
+                              'blogger_id BIGINT UNSIGNED NOT NULL,'
                               'FOREIGN KEY (blogger_id)  REFERENCES bloggers (instagram_id)'
                               'ON DELETE CASCADE,'
                               'FOREIGN KEY (user_id)  REFERENCES users (telegram_id)'

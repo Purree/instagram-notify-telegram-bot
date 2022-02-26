@@ -1,5 +1,6 @@
+from datetime import datetime
+
 import mysql.connector
-import time
 
 
 class Database:
@@ -95,8 +96,10 @@ class Database:
         self.connection.commit()
         return True
 
-    def add_tariff_to_user(self, tariff_id, telegram_id, started_at=time.time()):
+    def add_tariff_to_user(self, tariff_id, telegram_id, started_at=datetime.now()):
         self.cursor.execute("""INSERT INTO user_tariffs VALUES (%s, %s, %s)""", [telegram_id, tariff_id, started_at])
+
+        self.connection.commit()
 
     def get_valid_user_tariffs(self, telegram_id):
         self.cursor.execute("""SELECT * FROM user_tariffs 
@@ -115,7 +118,7 @@ class Database:
                             [telegram_id])
 
         tariffs = self.cursor.fetchall()
-        
+
         return tariffs
 
     def get_user_subscriptions(self, telegram_id):

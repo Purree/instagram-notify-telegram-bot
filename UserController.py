@@ -13,7 +13,7 @@ class UserController:
 
     def subscribe_user(self, telegram_id, blogger_short_name):
         user_tariffs = self.get_active_user_tariffs(telegram_id)
-        if user_tariffs is None:
+        if not user_tariffs:
             self.add_tariff_to_user(1, telegram_id)
 
             user_tariffs = self.get_active_user_tariffs(telegram_id)
@@ -33,11 +33,15 @@ class UserController:
             self.database.subscribe_user(telegram_id, blogger_data[0])
         else:
             blogger_info = self.instagram_controller.get_blogger_main_info(blogger_short_name)
+            posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
+            last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
+                if posts_count != 0 else 0
+
             blogger_data = [
                 self.instagram_controller.get_blogger_id(blogger_data=blogger_info),
                 blogger_short_name,
-                blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count'],
-                blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id']
+                posts_count,
+                last_post_id
             ]
             self.database.add_new_blogger(blogger_data)
             self.database.subscribe_user(telegram_id, blogger_data[0])
