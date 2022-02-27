@@ -1,3 +1,4 @@
+import telegram
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 import re
@@ -38,11 +39,11 @@ class Telegram:
         # Subscribe an account
         self.updater.dispatcher \
             .add_handler(
-                MessageHandler(
-                    Filters.regex(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)'),
-                    self.subscribe_user
-                )
+            MessageHandler(
+                Filters.regex(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)'),
+                self.subscribe_user
             )
+        )
 
         # Unknown command
         self.updater.dispatcher \
@@ -57,14 +58,24 @@ class Telegram:
         update.message.reply_text('Неизвестная команда ¯\\_(ツ)_/¯', reply_markup=self.generate_keyboard())
 
     def show_user_subscriptions(self, update: Update, context: CallbackContext):
-        update.message.reply_text('TBA', reply_markup=self.generate_keyboard())
+        user_subscriptions = self.controller.get_user_subscriptions(update.message.from_user.id)
+        subscriptions_list = ""
+        print(user_subscriptions)
+        for subscription in user_subscriptions:
+            subscriptions_list += subscription[2] + f" ({subscription[1]})" + "\n"
+
+        update.message.reply_text('Список ваших подписок:\n' +
+                                  subscriptions_list +
+                                  "Чтобы отписаться пришлите цифры в скобочках",
+                                  reply_markup=self.generate_keyboard(),
+                                  )
 
     def write_subscription_guide(self, update: Update, context: CallbackContext):
         update.message.reply_text('Пришлите ссылку на инстаграм аккаунт 🥺')
 
     def subscribe_user(self, update: Update, context: CallbackContext):
-        blogger_short_name = re.match\
-            (r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)', update.message.text)\
+        blogger_short_name = re.match \
+            (r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)', update.message.text) \
             .group(1)
 
         user_subscription = self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
@@ -75,5 +86,3 @@ class Telegram:
         else:
             update.message.reply_text('Вы успешно подписаны на ' + user_subscription.returnValue,
                                       reply_markup=self.generate_keyboard())
-
-

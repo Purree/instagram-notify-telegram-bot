@@ -124,6 +124,10 @@ class Database:
         return tariffs
 
     def get_user_subscriptions(self, telegram_id):
-        self.cursor.execute("""SELECT * FROM user_subscriptions WHERE user_id = %s""", [telegram_id])
+        self.cursor.execute("""SELECT user_id, CONVERT(`blogger_id`, char), bloggers.short_name, 
+                               bloggers.posts_count, CONVERT(bloggers.last_post_id, char) 
+                               FROM user_subscriptions 
+                               INNER JOIN bloggers ON blogger_id = instagram_id 
+                               WHERE user_id = %s""", [telegram_id])
 
         return self.cursor.fetchall()
