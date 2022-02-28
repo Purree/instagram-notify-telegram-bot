@@ -49,7 +49,7 @@ class Telegram:
         self.updater.dispatcher \
             .add_handler(
             MessageHandler(
-                Filters.regex(r'[0-9]*'),
+                Filters.regex(r'[\d]'),
                 self.unsubscribe_user
             )
         )
