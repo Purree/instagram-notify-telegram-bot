@@ -45,6 +45,15 @@ class Telegram:
             )
         )
 
+        # Unsubscribe from account
+        self.updater.dispatcher \
+            .add_handler(
+            MessageHandler(
+                Filters.regex(r'[0-9]*'),
+                self.unsubscribe_user
+            )
+        )
+
         # Unknown command
         self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.all, self.write_unknown_command_exception))
@@ -60,13 +69,22 @@ class Telegram:
     def show_user_subscriptions(self, update: Update, context: CallbackContext):
         user_subscriptions = self.controller.get_user_subscriptions(update.message.from_user.id)
         subscriptions_list = ""
-        print(user_subscriptions)
+
         for subscription in user_subscriptions:
             subscriptions_list += subscription[2] + f" ({subscription[1]})" + "\n"
 
         update.message.reply_text('Список ваших подписок:\n' +
                                   subscriptions_list +
                                   "Чтобы отписаться пришлите цифры в скобочках",
+                                  reply_markup=self.generate_keyboard(),
+                                  )
+
+    def unsubscribe_user(self, update: Update, context: CallbackContext):
+        blogger_id = re.match(r'[0-9]*', update.message.text).group(0)
+        unsubscribe_result = self.controller.unsubscribe_user(update.message.from_user.id, blogger_id)
+        update.message.reply_text('Вы успешно отписались от этого пользователя'
+                                  if unsubscribe_result.isSuccess
+                                  else unsubscribe_result.errorMessage,
                                   reply_markup=self.generate_keyboard(),
                                   )
 

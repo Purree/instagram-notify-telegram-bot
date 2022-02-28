@@ -75,3 +75,7 @@ class UserController:
 
     def add_tariff_to_user(self, tariff_id, telegram_id):
         self.database.add_tariff_to_user(tariff_id=tariff_id, telegram_id=telegram_id)
+
+    def unsubscribe_user(self, telegram_id, blogger_id):
+        return self.database.unsubscribe_user(telegram_id, blogger_id)
+

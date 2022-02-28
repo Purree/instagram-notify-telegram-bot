@@ -131,3 +131,16 @@ class Database:
                                WHERE user_id = %s""", [telegram_id])
 
         return self.cursor.fetchall()
+
+    def unsubscribe_user(self, telegram_id, blogger_id):
+        self.cursor.execute("""DELETE
+                               FROM user_subscriptions
+                               WHERE user_id = %s
+                               AND blogger_id = %s""", [telegram_id, blogger_id])
+
+        self.connection.commit()
+
+        if self.cursor.rowcount > 0:
+            return FunctionResult.success()
+
+        return FunctionResult.error("Вы не подписаны на этого пользователя")
