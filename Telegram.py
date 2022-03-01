@@ -11,7 +11,7 @@ class Telegram:
         self.updater = Updater(token)
         self.controller = UserController()
 
-        self.main_keyboard_buttons = [['Мои подписки', 'Подписаться']]
+        self.main_keyboard_buttons = [['Мои подписки', 'Подписаться'], ['Мои тарифы', 'Отписаться']]
 
         self.activate_handlers()
 
@@ -36,23 +36,18 @@ class Telegram:
         self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.text(self.main_keyboard_buttons[0][1]), self.write_subscription_guide))
 
-        # Subscribe an account
+        # Check user tariffs
+        self.updater.dispatcher \
+            .add_handler(MessageHandler(Filters.text(self.main_keyboard_buttons[1][0]), self.show_user_tariffs))
+
+        # Writes information on how to unsubscribe an account
         self.updater.dispatcher \
             .add_handler(
-            MessageHandler(
-                Filters.regex(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)'),
-                self.subscribe_user
-            )
-        )
+            MessageHandler(Filters.text(self.main_keyboard_buttons[1][1]), self.write_unsubscription_guide))
 
         # Unsubscribe from account
         self.updater.dispatcher \
-            .add_handler(
-            MessageHandler(
-                Filters.regex(r'[\d]'),
-                self.unsubscribe_user
-            )
-        )
+            .add_handler(CommandHandler('unsub', self.unsubscribe_user))
 
         # Unknown command
         self.updater.dispatcher \
@@ -65,6 +60,18 @@ class Telegram:
 
     def write_unknown_command_exception(self, update: Update, context: CallbackContext):
         update.message.reply_text('Неизвестная команда ¯\\_(ツ)_/¯', reply_markup=self.generate_keyboard())
+
+    def show_user_tariffs(self, update: Update, context: CallbackContext):
+        user_tariffs = self.controller.get_user_tariffs(update.message.from_user.id)
+        tariffs_list = ""
+
+        for tariff in user_tariffs:
+            print(tariff)
+            tariffs_list += tariff[7] + f" {tariff[8] or ''}" + "\n"
+
+        update.message.reply_text('Список ваших тарифов:\n' + tariffs_list,
+                                  reply_markup=self.generate_keyboard(),
+                                  )
 
     def show_user_subscriptions(self, update: Update, context: CallbackContext):
         user_subscriptions = self.controller.get_user_subscriptions(update.message.from_user.id)
@@ -80,27 +87,42 @@ class Telegram:
                                   )
 
     def unsubscribe_user(self, update: Update, context: CallbackContext):
-        blogger_id = re.match(r'[0-9]*', update.message.text).group(0)
+        try:
+            blogger_id = re.findall(r'\d+', update.message.text)[0]
+        except IndexError as error:
+            self.send_error_message(update, "Введены невалидные данные")
+            return
+
         unsubscribe_result = self.controller.unsubscribe_user(update.message.from_user.id, blogger_id)
-        update.message.reply_text('Вы успешно отписались от этого пользователя'
-                                  if unsubscribe_result.isSuccess
-                                  else unsubscribe_result.errorMessage,
-                                  reply_markup=self.generate_keyboard(),
-                                  )
+        if unsubscribe_result.isSuccess:
+            update.message.reply_text('Вы успешно отписались от этого пользователя',
+                                      reply_markup=self.generate_keyboard(),
+                                      )
+            return
+
+        self.send_error_message(update, unsubscribe_result.errorMessage)
 
     def write_subscription_guide(self, update: Update, context: CallbackContext):
         update.message.reply_text('Пришлите ссылку на инстаграм аккаунт 🥺')
 
+    def write_unsubscription_guide(self, update: Update, context: CallbackContext):
+        update.message.reply_text('Выполните команду /unsub + цифры из скобочек из раздела ' +
+                                  self.main_keyboard_buttons[0][0])
+
     def subscribe_user(self, update: Update, context: CallbackContext):
-        blogger_short_name = re.match \
-            (r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)', update.message.text) \
-            .group(1)
+        blogger_short_name = \
+            re.match(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)',
+                     update.message.text).group(1)
 
         user_subscription = self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
 
         if not user_subscription.isSuccess:
-            update.message.reply_text('Возникли некоторые трудности. ' + user_subscription.errorMessage,
-                                      reply_markup=self.generate_keyboard())
+            self.send_error_message(update, user_subscription.errorMessage)
         else:
             update.message.reply_text('Вы успешно подписаны на ' + user_subscription.returnValue,
                                       reply_markup=self.generate_keyboard())
+
+
+    def send_error_message(self, update, error_text):
+        update.message.reply_text('Возникли некоторые трудности. ' + error_text,
+                                  reply_markup=self.generate_keyboard())
