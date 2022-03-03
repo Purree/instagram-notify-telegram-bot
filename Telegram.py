@@ -66,7 +66,6 @@ class Telegram:
         tariffs_list = ""
 
         for tariff in user_tariffs:
-            print(tariff)
             tariffs_list += tariff[7] + f" {tariff[8] or ''}" + "\n"
 
         update.message.reply_text('Список ваших тарифов:\n' + tariffs_list,
