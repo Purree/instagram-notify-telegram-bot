@@ -49,6 +49,15 @@ class Telegram:
         self.updater.dispatcher \
             .add_handler(CommandHandler('unsub', self.unsubscribe_user))
 
+        # Subscribe an account
+        self.updater.dispatcher \
+            .add_handler(
+            MessageHandler(
+                Filters.regex(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)'),
+                self.subscribe_user
+            )
+        )
+
         # Unknown command
         self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.all, self.write_unknown_command_exception))
