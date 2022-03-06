@@ -90,7 +90,9 @@ class Telegram:
 
         update.message.reply_text('Список ваших подписок:\n' +
                                   subscriptions_list +
-                                  "Чтобы отписаться пришлите цифры в скобочках",
+                                  "Чтобы отписаться пришлите цифры в скобочках"
+                                  if subscriptions_list != "" else
+                                  "У вас нет подписок",
                                   reply_markup=self.generate_keyboard(),
                                   )
 

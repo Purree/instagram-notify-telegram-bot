@@ -14,21 +14,31 @@ def _use_one_time_connection(function_to_decorate):
 
         connection_index = function_arguments.index("connection")
         cursor_index = function_arguments.index("cursor")
-        connection = None
-        if len(params) < connection_index or params[connection_index] is None \
-                or not isinstance(params[connection_index], mysql.connector.connection_cext.CMySQLConnection):
-            while len(params) < max(connection_index, cursor_index)-2:
+
+        is_connection_need_to_close = False
+
+        if len(params) < connection_index or params[connection_index - 1] is None \
+                or not isinstance(params[connection_index - 1], mysql.connector.connection_cext.CMySQLConnection):
+            # Fill all params with None while count of params less than count need to have
+            while len(params) < connection_index - 1:
                 params += (None,)
 
             new_connection = self.connect(self._parameters)
             connection = new_connection["connection"]
             params = params[0:connection_index] + (connection,) + params[connection_index:]
+
+            while len(params) < cursor_index - 1:
+                params += (None,)
+
             params = params[0:cursor_index] + (new_connection['cursor'],) + params[cursor_index:]
-        else:
-            connection = params[connection_index]
+
+            is_connection_need_to_close = True
 
         decorated_function_result = function_to_decorate(self, *params)
-        connection.close()
+
+        if is_connection_need_to_close:
+            connection.close()
+
         return decorated_function_result
 
     return wrapper_function
@@ -123,7 +133,8 @@ class Database:
 
     @_use_one_time_connection
     def subscribe_user(self, telegram_id, blogger_short_name, connection=None, cursor=None):
-        if self.check_is_user_subscribe_for_blogger(telegram_id, blogger_short_name, connection=connection, cursor=cursor):
+        if self.check_is_user_subscribe_for_blogger(telegram_id, blogger_short_name, connection=connection,
+                                                    cursor=cursor):
             return FunctionResult.error('Вы уже подписаны этого пользователя')
 
         cursor.execute("""INSERT INTO user_subscriptions VALUES (%s, %s)""", [telegram_id, blogger_short_name])
@@ -135,7 +146,8 @@ class Database:
     # blogger_data - array of blogger id, blogger short name, posts count, last post id
     @_use_one_time_connection
     def add_new_blogger(self, blogger_data, connection=None, cursor=None):
-        if self.search_blogger_in_database(blogger_id=blogger_data[0], connection=connection, cursor=cursor) is not None:
+        if self.search_blogger_in_database(blogger_id=blogger_data[0], connection=connection,
+                                           cursor=cursor) is not None:
             return False
 
         cursor.execute("""INSERT INTO bloggers VALUES (%s, %s, %s, %s)""", blogger_data)

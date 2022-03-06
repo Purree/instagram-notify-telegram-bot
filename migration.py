@@ -21,22 +21,29 @@ else:
 
 database = Database(database_parameters)
 
+connection_parameters = database.connect(database_parameters)
+connection = connection_parameters["connection"]
+cursor = connection_parameters["cursor"]
+
 if database.execute_custom_query(f'SELECT count(*) AS TOTALNUMBEROFTABLES '
                                  f'FROM INFORMATION_SCHEMA.TABLES '
-                                 f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\''
+                                 f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\'',
                                  )[0][0] != 0:
     clear_database = input("In database already exists tables. Delete all tables? (y/n) ")
     if clear_database == 'y':
-        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=0;')
+        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=0;', False, connection, cursor)
         all_tables = database.execute_custom_query(f'SELECT table_schema AS database_name, table_name '
                                                    f'FROM INFORMATION_SCHEMA.TABLES '
-                                                   f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\'')
+                                                   f'WHERE TABLE_SCHEMA = \'{database_parameters["databasename"]}\'',
+                                                   False, connection, cursor)
 
         for table in all_tables:
-            database.execute_custom_query('DROP TABLE ' + table[1])
+            database.execute_custom_query('DROP TABLE ' + table[1],
+                                          False, connection, cursor)
             print(table[1], 'in', table[0], 'deleted')
 
-        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=1;')
+        database.execute_custom_query('SET FOREIGN_KEY_CHECKS=1;', False,
+                                      connection, cursor)
 
 database.execute_custom_query('CREATE TABLE users ('
                               'telegram_id INT UNSIGNED PRIMARY KEY NOT NULL'
