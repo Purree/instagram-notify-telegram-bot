@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from Database import Database
 from Config import Config
 from FunctionResult import FunctionResult
@@ -45,6 +47,7 @@ class UserController:
 
     def get_active_user_tariffs_and_add_if_not_found(self, telegram_id):
         user_tariffs = self.get_active_user_tariffs(telegram_id)
+
         if not user_tariffs:
             self.add_tariff_to_user(1, telegram_id)
 
@@ -73,8 +76,8 @@ class UserController:
     def get_user_subscriptions(self, telegram_id):
         return self.database.get_user_subscriptions(telegram_id)
 
-    def add_tariff_to_user(self, tariff_id, telegram_id):
-        self.database.add_tariff_to_user(tariff_id=tariff_id, telegram_id=telegram_id)
+    def add_tariff_to_user(self, tariff_id, telegram_id, started_at=datetime.now()):
+        self.database.add_tariff_to_user(tariff_id, telegram_id, started_at)
 
     def unsubscribe_user(self, telegram_id, blogger_id):
         return self.database.unsubscribe_user(telegram_id, blogger_id)

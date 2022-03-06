@@ -1,5 +1,4 @@
 import inspect
-from datetime import datetime
 
 import mysql.connector
 
@@ -146,7 +145,7 @@ class Database:
     # blogger_data - array of blogger id, blogger short name, posts count, last post id
     @_use_one_time_connection
     def add_new_blogger(self, blogger_data, connection=None, cursor=None):
-        if self.search_blogger_in_database(blogger_id=blogger_data[0], connection=connection,
+        if self.search_blogger_in_database(None, blogger_data[0], connection=connection,
                                            cursor=cursor) is not None:
             return False
 
@@ -156,7 +155,7 @@ class Database:
         return True
 
     @_use_one_time_connection
-    def add_tariff_to_user(self, tariff_id, telegram_id, started_at=datetime.now(), connection=None, cursor=None):
+    def add_tariff_to_user(self, tariff_id, telegram_id, started_at, connection=None, cursor=None):
         cursor.execute("""INSERT INTO user_tariffs VALUES (%s, %s, %s)""", [telegram_id, tariff_id, started_at])
 
         connection.commit()
