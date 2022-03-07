@@ -1,4 +1,3 @@
-import telegram
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 import re
@@ -131,7 +130,6 @@ class Telegram:
         else:
             update.message.reply_text('Вы успешно подписаны на ' + user_subscription.returnValue,
                                       reply_markup=self.generate_keyboard())
-
 
     def send_error_message(self, update, error_text):
         update.message.reply_text('Возникли некоторые трудности. ' + error_text,

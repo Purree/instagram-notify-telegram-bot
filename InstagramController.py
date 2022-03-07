@@ -43,3 +43,6 @@ class InstagramController:
 
         return result.json()
 
+    def get_bloggers_with_subscriptions(self):
+        return self.database.get_bloggers_with_subscriptions()
+

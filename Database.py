@@ -91,15 +91,21 @@ class Database:
 
         return False
 
+    @_use_one_time_connection
+    def get_bloggers_with_subscriptions(self, connection=None, cursor=None):
+        cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char) 
+                                      FROM bloggers INNER JOIN user_subscriptions ON instagram_id = blogger_id""")
+
+        return cursor.fetchall()
+
     """
-    :param blogger_short_name: short instagram blogger name 
-    :param blogger_id: id of blogger what were given by api 
+    :param blogger_short_name: short instagram blogger name
+    :param blogger_id: id of blogger what were given by api
     :returns: blogger by its short name if has been set
     :returns: blogger by its id if has been set
     :returns: blogger by both of these values if both are given
     :exception: if no argument were passed
     """
-
     @_use_one_time_connection
     def search_blogger_in_database(self, blogger_short_name=None, blogger_id=None, connection=None, cursor=None):
         if blogger_short_name is None and blogger_id is None:
