@@ -4,14 +4,17 @@ from InstagramController import InstagramController
 
 
 class Instagram:
-    def __init__(self):
+    def __init__(self, parameters):
+        self._parameters = parameters
         self.controller = InstagramController()
-        self.get_bloggers_info()
+        threading.Timer(parameters["newPostsCheckingInterval"], self.compare_bloggers_information).start()
 
-    def get_bloggers_info(self, interval=5):
-        threading.Timer(interval, self.get_bloggers_info).start()
-        info = []
+    def compare_bloggers_information(self):
+        ids_of_bloggers_with_new_posts = []
         for blogger in self.controller.get_bloggers_with_subscriptions():
-            info = self.controller.get_blogger_main_info(blogger[1])
+            blogger_info = self.controller.get_blogger_main_info(blogger[1])
+            # If last post id > last saved post id
+            if blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] > blogger[3]:
+                ids_of_bloggers_with_new_posts += self.controller.get_blogger_id(blogger_data=blogger_info)
 
-        return info
+        return ids_of_bloggers_with_new_posts
