@@ -132,5 +132,4 @@ class Telegram:
                                       reply_markup=self.generate_keyboard())
 
     def send_error_message(self, update, error_text):
-        update.message.reply_text('Возникли некоторые трудности. ' + error_text,
-                                  reply_markup=self.generate_keyboard())
+        update.message.reply_text(error_text, reply_markup=self.generate_keyboard())
