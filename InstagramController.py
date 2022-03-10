@@ -1,6 +1,9 @@
+import aiohttp
+import asyncio
+import requests
+
 from Config import Config
 from Database import Database
-import requests
 
 
 class InstagramController:
@@ -27,10 +30,13 @@ class InstagramController:
                 else self.get_blogger_main_info(short_name)
                 )['logging_page_id'].replace('profilePage_', '')
 
-    def get_blogger_main_info(self, blogger_short_name):
-        result = requests.get(self.BLOGGER_DATA_LINK % blogger_short_name)
+    async def _get_blogger_main_info(self, blogger_short_name):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name) as response:
+                return await response.json()
 
-        return result.json()
+    def get_blogger_main_info(self, blogger_short_name):
+        return asyncio.run(self._get_blogger_main_info(blogger_short_name))
 
     # WORK ONLY WITH LOGGED IN ACCOUNT.
     # TEMPORARILY FROZEN
