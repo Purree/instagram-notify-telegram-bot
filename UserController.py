@@ -27,6 +27,10 @@ class UserController:
 
         if blogger_data is None:
             blogger_info = self.instagram_controller.get_blogger_main_info(blogger_short_name)
+
+            if blogger_info == {}:
+                return FunctionResult.error('Такого пользователя не существует')
+
             posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
             last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
                 if posts_count != 0 else 0
