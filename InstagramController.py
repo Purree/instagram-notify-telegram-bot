@@ -4,6 +4,7 @@ import requests
 
 from Config import Config
 from Database import Database
+from Debug import Debug
 
 
 class InstagramController:
@@ -16,6 +17,7 @@ class InstagramController:
     def __init__(self):
         self.database = Database(Config().get_all_section_parameters('DATABASE'))
         self.proxy = Config().read_from_config("PROXY", "proxy")
+        self.debug = Debug()
 
     # TEMPORARILY FROZEN AND IDENTICAL BECAUSE USER STORIES CANNOT GET WITHOUT LOGIN
     # I HIGHLY RECOMMEND USING get_blogger_main_info METHOD.

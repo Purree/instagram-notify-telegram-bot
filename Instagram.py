@@ -7,7 +7,6 @@ class Instagram:
     def __init__(self, parameters):
         self._parameters = parameters
         self.controller = InstagramController()
-
         threading.Thread(target=self.compare_bloggers_information, args=()).start()
         threading.Timer(float(parameters["newpostscheckinginterval"]), self.compare_bloggers_information).start()
 
