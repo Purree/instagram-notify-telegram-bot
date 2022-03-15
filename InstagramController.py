@@ -15,8 +15,9 @@ class InstagramController:
                                  "en_US; en-US; scale=2.00; 828x1792; 165586599) "
 
     def __init__(self):
-        self.database = Database(Config().get_all_section_parameters('DATABASE'))
-        self.proxy = Config().read_from_config("PROXY", "proxy")
+        self.config = Config()
+        self.database = Database(self.config.get_all_section_parameters('DATABASE'))
+        self.proxy = self.config.read_from_config("PROXY", "proxy")
         self.debug = Debug()
 
     # TEMPORARILY FROZEN AND IDENTICAL BECAUSE USER STORIES CANNOT GET WITHOUT LOGIN
@@ -34,7 +35,8 @@ class InstagramController:
                 )['logging_page_id'].replace('profilePage_', '')
 
     async def _get_blogger_main_info(self, session, blogger_short_name):
-        async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, proxy=self.proxy) as response:
+        async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, proxy=self.proxy,
+                               cookies={"sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
             return await response.json()
 
     async def _get_main_info_of_many_bloggers(self, bloggers_short_names):
@@ -57,7 +59,8 @@ class InstagramController:
     def get_blogger_stories_info(self, blogger_id):
         raise Exception('TEMPORARILY FROZEN')
         result = requests.get(self.BLOGGER_STORIES_DATA_LINK % blogger_id,
-                              headers={'User-Agent': self.BLOGGER_STORIES_USER_AGENT}, proxies=self.proxy)
+                              headers={'User-Agent': self.BLOGGER_STORIES_USER_AGENT}, proxies=self.proxy,
+                              cookies={"sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")})
 
         print(result.text)
 
