@@ -19,6 +19,7 @@ class InstagramController:
         self.database = Database(self.config.get_all_section_parameters('DATABASE'))
         self.proxy = self.config.read_from_config("PROXY", "proxy")
         self.debug = Debug()
+        setattr(asyncio.sslproto._SSLProtocolTransport, "_start_tls_compatible", True)
 
     # TEMPORARILY FROZEN AND IDENTICAL BECAUSE USER STORIES CANNOT GET WITHOUT LOGIN
     # I HIGHLY RECOMMEND USING get_blogger_main_info METHOD.

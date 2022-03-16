@@ -1,6 +1,7 @@
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 import re
+
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
 from UserController import UserController
 
