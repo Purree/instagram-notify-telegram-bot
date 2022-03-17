@@ -69,3 +69,6 @@ class InstagramController:
 
     def get_bloggers_with_subscriptions(self):
         return self.database.get_bloggers_with_subscriptions()
+
+    def get_blogger_subscribers(self, blogger_id):
+        return self.database.get_all_blogger_subscribers(blogger_id)

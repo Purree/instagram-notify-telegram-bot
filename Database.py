@@ -98,6 +98,15 @@ class Database:
 
         return cursor.fetchall()
 
+    @_use_one_time_connection
+    def get_all_blogger_subscribers(self, blogger_id, connection=None, cursor=None):
+        cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char),  
+                                      user_subscriptions.user_id
+                                      FROM bloggers INNER JOIN user_subscriptions ON instagram_id = blogger_id 
+                                      WHERE instagram_id = %s""", [blogger_id])
+
+        return cursor.fetchall()
+
     """
     :param blogger_short_name: short instagram blogger name
     :param blogger_id: id of blogger what were given by api
