@@ -1,5 +1,8 @@
+import asyncio
 import re
 
+import aiohttp
+import telegram
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
@@ -9,14 +12,14 @@ from UserController import UserController
 class Telegram:
     def __init__(self, token):
         self.updater = Updater(token)
+        self.bot = telegram.Bot(token)
         self.controller = UserController()
 
         self.main_keyboard_buttons = [['Мои подписки', 'Подписаться'], ['Мои тарифы', 'Отписаться']]
 
         self.activate_handlers()
-
         self.updater.start_polling()
-        self.updater.idle()
+        # self.updater.idle()
 
     def start_command_handler(self, update: Update, context: CallbackContext) -> None:
         if self.controller.create_new_user(update.message.from_user.id):
@@ -134,3 +137,29 @@ class Telegram:
 
     def send_error_message(self, update, error_text):
         update.message.reply_text(error_text, reply_markup=self.generate_keyboard())
+
+    def send_new_posts_message(self, blogger_with_subscribers):
+        print(2)
+        print(blogger_with_subscribers)
+        asyncio.run(self._send_new_posts_message(blogger_with_subscribers))
+
+    async def _send_new_posts_message(self, blogger_with_subscribers):
+        print(12)
+        print(blogger_with_subscribers)
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+
+            for blogger_data in blogger_with_subscribers:
+                tasks.append(asyncio.ensure_future(
+                    self._send_message_to_user_async(
+                        "У пользователя %s новый пост" % blogger_data[1], blogger_data[4]))
+                )
+
+            return await asyncio.gather(*tasks)
+
+
+    async def _send_message_to_user_async(self, message_text, receiver_id):
+        print(21)
+        print(message_text, receiver_id)
+        await self.bot.sendMessage(text=message_text, chat_id=receiver_id)
+

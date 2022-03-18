@@ -1,12 +1,15 @@
 import threading
 
+from Config import Config
 from InstagramController import InstagramController
+from Telegram import Telegram
 
 
 class Instagram:
-    def __init__(self, parameters):
+    def __init__(self, parameters, telegram: Telegram):
         self._parameters = parameters
         self.controller = InstagramController()
+        self.telegram = telegram
         threading.Thread(target=self.new_posts_handler, args=()).start()
         threading.Timer(float(parameters["newpostscheckinginterval"]), self.compare_bloggers_information).start()
 
@@ -16,10 +19,17 @@ class Instagram:
         if not users_with_new_posts:
             return
 
+        print(-1)
+        print(users_with_new_posts)
         for blogger_id in users_with_new_posts:
+            print(0)
+            print(blogger_id)
             for blogger_data in self.controller.get_blogger_subscribers(blogger_id):
-                print("TBD")
-                # Отправляем сообщение к blogger_data[4]
+                print(1)
+                print(blogger_data)
+                self.telegram.send_new_posts_message(blogger_data)
+
+            # Отправляем сообщение к blogger_data[4]
 
             # Обновляем posts_count и last_post_id у blogger_id на users_with_new_posts[blogger_id][0] и 1 соответственно
 
