@@ -220,3 +220,13 @@ class Database:
             return FunctionResult.success()
 
         return FunctionResult.error("Вы не подписаны на этого пользователя")
+
+    @_use_one_time_connection
+    def update_blogger_posts_info(self, posts_count, last_post_id, blogger_id, connection=None, cursor=None):
+        cursor.execute("""UPDATE instagram_notify.bloggers
+            SET posts_count  = %s,
+            last_post_id = %s
+            WHERE instagram_id = %s;""", [posts_count, last_post_id, blogger_id])
+
+        connection.commit()
+        return cursor.rowcount

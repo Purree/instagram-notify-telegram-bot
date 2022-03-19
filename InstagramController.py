@@ -72,3 +72,7 @@ class InstagramController:
 
     def get_blogger_subscribers(self, blogger_id):
         return self.database.get_all_blogger_subscribers(blogger_id)
+
+    def update_blogger_posts_info(self, posts_count, last_post_id, blogger_id):
+        self.database.update_blogger_posts_info(posts_count, last_post_id, blogger_id)
+

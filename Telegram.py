@@ -7,12 +7,14 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
 from Config import Config
+from Debug import Debug
 from Instagram import Instagram
 from UserController import UserController
 
 
 class Telegram:
     def __init__(self, token):
+        self.debug = Debug()
         self.updater = Updater(token)
         self.bot = telegram.Bot(token)
         self.controller = UserController()
@@ -160,5 +162,6 @@ class Telegram:
             return await asyncio.gather(*tasks)
 
     async def _send_message_to_user_async(self, message_text, receiver_id):
+        self.debug.dump()
         self.bot.sendMessage(text=message_text, chat_id=receiver_id)
 

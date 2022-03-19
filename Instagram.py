@@ -1,5 +1,7 @@
 import threading
+from datetime import datetime
 
+from Debug import Debug
 from InstagramController import InstagramController
 
 
@@ -8,19 +10,27 @@ class Instagram:
         self._parameters = parameters
         self.controller = InstagramController()
         self.telegram = telegram
+        self.debug = Debug()
         threading.Thread(target=self.new_posts_handler, args=()).start()
-        threading.Timer(float(parameters["newpostscheckinginterval"]), self.compare_bloggers_information).start()
 
     def new_posts_handler(self):
+        threading.Timer(float(self._parameters["newpostscheckinginterval"]), self.new_posts_handler).start()
+        self.debug.dump("Checked at", datetime.now().strftime("%H:%M:%S"))
+        self.debug.dump(f"Next check after {self._parameters['newpostscheckinginterval']} seconds")
         users_with_new_posts = self.compare_bloggers_information()
 
         if not users_with_new_posts:
             return
 
         for blogger_id in users_with_new_posts:
-            self.telegram.send_new_posts_message(self.controller.get_blogger_subscribers(blogger_id))
+            blogger_data_with_subscribers = self.controller.get_blogger_subscribers(blogger_id)
+            self.telegram.send_new_posts_message(blogger_data_with_subscribers)
 
-            # Обновляем posts_count и last_post_id у blogger_id на users_with_new_posts[blogger_id][0] и 1 соответственно
+            self.controller.update_blogger_posts_info(
+                users_with_new_posts[blogger_id][0],
+                users_with_new_posts[blogger_id][1],
+                blogger_id
+            )
 
     def compare_bloggers_information(self):
         bloggers_with_new_posts = {}
@@ -39,4 +49,5 @@ class Instagram:
                         blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id']
                     ]
 
+        self.debug.dump("Bloggers with new posts: ", bloggers_with_new_posts)
         return bloggers_with_new_posts
