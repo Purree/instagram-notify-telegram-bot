@@ -1,12 +1,10 @@
 import threading
 
-from Config import Config
 from InstagramController import InstagramController
-from Telegram import Telegram
 
 
 class Instagram:
-    def __init__(self, parameters, telegram: Telegram):
+    def __init__(self, parameters, telegram):
         self._parameters = parameters
         self.controller = InstagramController()
         self.telegram = telegram
@@ -19,17 +17,8 @@ class Instagram:
         if not users_with_new_posts:
             return
 
-        print(-1)
-        print(users_with_new_posts)
         for blogger_id in users_with_new_posts:
-            print(0)
-            print(blogger_id)
-            for blogger_data in self.controller.get_blogger_subscribers(blogger_id):
-                print(1)
-                print(blogger_data)
-                self.telegram.send_new_posts_message(blogger_data)
-
-            # Отправляем сообщение к blogger_data[4]
+            self.telegram.send_new_posts_message(self.controller.get_blogger_subscribers(blogger_id))
 
             # Обновляем posts_count и last_post_id у blogger_id на users_with_new_posts[blogger_id][0] и 1 соответственно
 

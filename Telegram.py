@@ -6,6 +6,8 @@ import telegram
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
+from Config import Config
+from Instagram import Instagram
 from UserController import UserController
 
 
@@ -19,7 +21,11 @@ class Telegram:
 
         self.activate_handlers()
         self.updater.start_polling()
-        # self.updater.idle()
+
+        # Initialize new posts handler
+        Instagram(Config().get_all_section_parameters("INSTAGRAM"), self)
+
+        self.updater.idle()
 
     def start_command_handler(self, update: Update, context: CallbackContext) -> None:
         if self.controller.create_new_user(update.message.from_user.id):
@@ -139,13 +145,9 @@ class Telegram:
         update.message.reply_text(error_text, reply_markup=self.generate_keyboard())
 
     def send_new_posts_message(self, blogger_with_subscribers):
-        print(2)
-        print(blogger_with_subscribers)
         asyncio.run(self._send_new_posts_message(blogger_with_subscribers))
 
     async def _send_new_posts_message(self, blogger_with_subscribers):
-        print(12)
-        print(blogger_with_subscribers)
         async with aiohttp.ClientSession() as session:
             tasks = []
 
@@ -157,9 +159,6 @@ class Telegram:
 
             return await asyncio.gather(*tasks)
 
-
     async def _send_message_to_user_async(self, message_text, receiver_id):
-        print(21)
-        print(message_text, receiver_id)
-        await self.bot.sendMessage(text=message_text, chat_id=receiver_id)
+        self.bot.sendMessage(text=message_text, chat_id=receiver_id)
 
