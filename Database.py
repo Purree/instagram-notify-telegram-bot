@@ -230,3 +230,10 @@ class Database:
 
         connection.commit()
         return cursor.rowcount
+
+    @_use_one_time_connection
+    def delete_blogger(self, blogger_short_name, connection=None, cursor=None):
+        cursor.execute("""DELETE FROM bloggers WHERE short_name = %s""", [blogger_short_name])
+
+        connection.commit()
+        return cursor.rowcount

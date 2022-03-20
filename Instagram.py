@@ -40,6 +40,10 @@ class Instagram:
                 self.controller.get_main_info_of_many_bloggers([blogger[1] for blogger in bloggers])):
             # If last post id > last saved post id
 
+            if blogger_info == {}:
+                self.remove_blogger(bloggers[index][0], bloggers[index][1])
+                return {}
+
             if blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count'] != 0 and \
                     blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] > \
                     bloggers[index][3]:
@@ -51,3 +55,12 @@ class Instagram:
 
         self.debug.dump("Bloggers with new posts: ", bloggers_with_new_posts)
         return bloggers_with_new_posts
+
+    def remove_blogger(self, blogger_id, blogger_name):
+        for blogger_with_subscriber in self.controller.get_blogger_subscribers(blogger_id):
+            self.telegram.send_custom_message(
+                "Блоггер %s сменил никнейм, переподпишитесь на него с новым ником" % blogger_with_subscriber[1],
+                blogger_with_subscriber[4]
+            )
+
+        self.controller.delete_blogger(blogger_name)

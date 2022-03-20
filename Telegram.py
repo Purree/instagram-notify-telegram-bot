@@ -149,6 +149,9 @@ class Telegram:
     def send_new_posts_message(self, blogger_with_subscribers):
         asyncio.run(self._send_new_posts_message(blogger_with_subscribers))
 
+    def send_custom_message(self, message_text, receiver_id):
+        asyncio.run(self._send_message_to_user_async(message_text, receiver_id))
+
     async def _send_new_posts_message(self, blogger_with_subscribers):
         async with aiohttp.ClientSession() as session:
             tasks = []
@@ -162,6 +165,6 @@ class Telegram:
             return await asyncio.gather(*tasks)
 
     async def _send_message_to_user_async(self, message_text, receiver_id):
-        self.debug.dump()
+        self.debug.dump(message_text, receiver_id)
         self.bot.sendMessage(text=message_text, chat_id=receiver_id)
 
