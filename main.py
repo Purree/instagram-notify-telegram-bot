@@ -1,6 +1,4 @@
 from Config import Config
-from Database import Database
-from Instagram import Instagram
 from Telegram import Telegram
 
 config = Config()

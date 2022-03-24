@@ -63,15 +63,15 @@ class InstagramController:
             tasks = []
 
             for blogger_id in blogger_ids:
-                tasks.append(asyncio.ensure_future(self._get_blogger_main_info(session, blogger_id)))
+                tasks.append(asyncio.ensure_future(self._get_blogger_stories(session, blogger_id)))
 
             return await asyncio.gather(*tasks)
 
     def get_blogger_stories(self, blogger_id):
-        return asyncio.run(self._get_main_info_of_many_bloggers([blogger_id]))[0]
+        return asyncio.run(self._get_stories_of_many_bloggers([blogger_id]))[0]
 
     def get_stories_of_many_bloggers(self, blogger_ids):
-        return asyncio.run(self._get_main_info_of_many_bloggers(blogger_ids))
+        return asyncio.run(self._get_stories_of_many_bloggers(blogger_ids))
 
     def get_bloggers_with_subscriptions(self):
         return self.database.get_bloggers_with_subscriptions()
