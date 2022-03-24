@@ -30,7 +30,8 @@ class InstagramController:
 
     async def _get_blogger_main_info(self, session, blogger_short_name):
         async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, proxy=self.proxy,
-                               cookies={"sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+                               cookies={
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
             return await response.json()
 
     async def _get_main_info_of_many_bloggers(self, bloggers_short_names):
@@ -48,6 +49,30 @@ class InstagramController:
     def get_main_info_of_many_bloggers(self, bloggers_short_names):
         return asyncio.run(self._get_main_info_of_many_bloggers(bloggers_short_names))
 
+    async def _get_blogger_stories(self, session, blogger_id):
+        async with session.get(self.BLOGGER_STORIES_LINK % blogger_id, proxy=self.proxy,
+                               headers={
+                                   'User-Agent': self.BLOGGER_STORIES_USER_AGENT
+                               },
+                               cookies={
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+            return await response.json()
+
+    async def _get_stories_of_many_bloggers(self, blogger_ids):
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+
+            for blogger_id in blogger_ids:
+                tasks.append(asyncio.ensure_future(self._get_blogger_main_info(session, blogger_id)))
+
+            return await asyncio.gather(*tasks)
+
+    def get_blogger_stories(self, blogger_id):
+        return asyncio.run(self._get_main_info_of_many_bloggers([blogger_id]))[0]
+
+    def get_stories_of_many_bloggers(self, blogger_ids):
+        return asyncio.run(self._get_main_info_of_many_bloggers(blogger_ids))
+
     def get_bloggers_with_subscriptions(self):
         return self.database.get_bloggers_with_subscriptions()
 
@@ -59,4 +84,3 @@ class InstagramController:
 
     def delete_blogger(self, blogger_short_name):
         self.database.delete_blogger(blogger_short_name)
-
