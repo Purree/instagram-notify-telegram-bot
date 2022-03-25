@@ -27,6 +27,7 @@ class Telegram:
         # Initialize new posts handler
         Instagram(Config().get_all_section_parameters("INSTAGRAM"), self)
 
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         self.updater.idle()
 
     def start_command_handler(self, update: Update, context: CallbackContext) -> None:

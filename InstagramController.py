@@ -1,6 +1,6 @@
 import aiohttp
 import asyncio
-import requests
+import platform
 
 from Config import Config
 from Database import Database
@@ -17,6 +17,9 @@ class InstagramController:
         self.database = Database(self.config.get_all_section_parameters('DATABASE'))
         self.proxy = self.config.read_from_config("PROXY", "proxy")
         self.debug = Debug()
+
+        if platform.system() == 'Windows':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         setattr(asyncio.sslproto._SSLProtocolTransport, "_start_tls_compatible", True)
 
     def get_blogger_id(self, short_name=None, blogger_data=None):
