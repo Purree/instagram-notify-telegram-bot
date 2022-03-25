@@ -77,7 +77,7 @@ class InstagramController:
         return self.database.get_bloggers_with_subscriptions()
 
     def get_last_blogger_story_id_from_data(self, user_data):
-        return user_data['items'][-1]['id'].split('_')[1] if user_data['items'] != [] else 0
+        return user_data['items'][-1]['id'].split('_')[0] if user_data['items'] != [] else 0
 
     def get_blogger_subscribers(self, blogger_id):
         return self.database.get_all_blogger_subscribers(blogger_id)
