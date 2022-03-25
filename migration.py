@@ -53,7 +53,8 @@ database.execute_custom_query('CREATE TABLE bloggers ('
                               'instagram_id BIGINT UNSIGNED PRIMARY KEY NOT NULL,'
                               'short_name varchar(30) NOT NULL UNIQUE,'  # unique identifier that the user uses 
                               'posts_count int(6) DEFAULT 0 NOT NULL,'
-                              'last_post_id BIGINT NOT NULL'
+                              'last_post_id BIGINT DEFAULT 0 NOT NULL,'
+                              'last_story_id BIGINT DEFAULT 0 NOT NULL'
                               ')')
 
 database.execute_custom_query('CREATE TABLE user_subscriptions ('

@@ -34,12 +34,17 @@ class UserController:
             posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
             last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
                 if posts_count != 0 else 0
+            last_story_id = self.instagram_controller.get_last_blogger_story_id_from_data(
+                self.instagram_controller.get_blogger_stories(
+                    self.instagram_controller.get_blogger_id(blogger_data=blogger_info))
+            )
 
             blogger_data = [
                 self.instagram_controller.get_blogger_id(blogger_data=blogger_info),
                 blogger_short_name,
                 posts_count,
-                last_post_id
+                last_post_id,
+                last_story_id
             ]
             self.database.add_new_blogger(blogger_data)
 
@@ -85,4 +90,3 @@ class UserController:
 
     def unsubscribe_user(self, telegram_id, blogger_id):
         return self.database.unsubscribe_user(telegram_id, blogger_id)
-

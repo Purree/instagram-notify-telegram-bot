@@ -163,8 +163,7 @@ class Database:
         if self.search_blogger_in_database(None, blogger_data[0], connection=connection,
                                            cursor=cursor) is not None:
             return False
-
-        cursor.execute("""INSERT INTO bloggers VALUES (%s, %s, %s, %s)""", blogger_data)
+        cursor.execute("""INSERT INTO bloggers VALUES (%s, %s, %s, %s, %s)""", blogger_data)
 
         connection.commit()
         return True
