@@ -124,7 +124,7 @@ class Database:
         if blogger_short_name is not None and blogger_id is not None:
             cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char) 
                               FROM bloggers WHERE short_name = %s AND instagram_id = %s""",
-                           [blogger_short_name, blogger_id])
+                           [blogger_short_name, f'{blogger_id}'])
 
             return cursor.fetchone()
 
@@ -135,7 +135,7 @@ class Database:
             return cursor.fetchone()
 
         cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char)
-                          FROM bloggers WHERE instagram_id = %s""", [blogger_id])
+                          FROM bloggers WHERE instagram_id = %s""", [f'{blogger_id}'])
 
         return cursor.fetchone()
 
@@ -212,7 +212,7 @@ class Database:
         cursor.execute("""DELETE
                                FROM user_subscriptions
                                WHERE user_id = %s
-                               AND blogger_id = %s""", [telegram_id, blogger_id])
+                               AND blogger_id = %s""", [telegram_id, f'{blogger_id}'])
 
         connection.commit()
 
@@ -226,7 +226,7 @@ class Database:
         cursor.execute("""UPDATE instagram_notify.bloggers
             SET posts_count  = %s,
             last_post_id = %s
-            WHERE instagram_id = %s;""", [posts_count, last_post_id, blogger_id])
+            WHERE instagram_id = %s;""", [posts_count, last_post_id, f'{blogger_id}'])
 
         connection.commit()
         return cursor.rowcount
@@ -234,6 +234,15 @@ class Database:
     @_use_one_time_connection
     def delete_blogger(self, blogger_short_name, connection=None, cursor=None):
         cursor.execute("""DELETE FROM bloggers WHERE short_name = %s""", [blogger_short_name])
+
+        connection.commit()
+        return cursor.rowcount
+
+    @_use_one_time_connection
+    def update_blogger_stories_info(self, last_story_id, blogger_id, connection=None, cursor=None):
+        cursor.execute("""UPDATE instagram_notify.bloggers
+            SET last_story_id = %s
+            WHERE instagram_id = %s;""", [last_story_id, f'{blogger_id}'])
 
         connection.commit()
         return cursor.rowcount

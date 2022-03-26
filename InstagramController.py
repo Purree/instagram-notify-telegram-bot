@@ -88,5 +88,8 @@ class InstagramController:
     def update_blogger_posts_info(self, posts_count, last_post_id, blogger_id):
         self.database.update_blogger_posts_info(posts_count, last_post_id, blogger_id)
 
+    def update_blogger_stories_info(self, last_story_id, blogger_id):
+        self.database.update_blogger_stories_info(last_story_id, blogger_id)
+
     def delete_blogger(self, blogger_short_name):
         self.database.delete_blogger(blogger_short_name)

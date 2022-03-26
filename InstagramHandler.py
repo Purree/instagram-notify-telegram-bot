@@ -5,16 +5,16 @@ from Debug import Debug
 from InstagramController import InstagramController
 
 
-class Instagram:
+class InstagramHandler:
     def __init__(self, parameters, telegram):
         self._parameters = parameters
         self.controller = InstagramController()
         self.telegram = telegram
         self.debug = Debug()
-        threading.Thread(target=self.new_posts_handler, args=()).start()
+        threading.Thread(target=self.new_events_handler, args=()).start()
 
-    def new_posts_handler(self):
-        threading.Timer(float(self._parameters["newpostscheckinginterval"]), self.new_posts_handler).start()
+    def new_events_handler(self):
+        threading.Timer(float(self._parameters["newpostscheckinginterval"]), self.new_events_handler).start()
         self.debug.dump("Checked at", datetime.now().strftime("%H:%M:%S"))
         self.debug.dump(f"Next check after {self._parameters['newpostscheckinginterval']} seconds")
         users_with_new_posts = self.compare_bloggers_information()
@@ -35,7 +35,12 @@ class Instagram:
                 )
 
             if 'story' in users_with_new_posts[blogger_id]:
-                print('New story', users_with_new_posts[blogger_id]['story'])
+                self.telegram.send_new_stories_message(blogger_data_with_subscribers)
+
+                self.controller.update_blogger_stories_info(
+                    users_with_new_posts[blogger_id]['story'][0],
+                    blogger_id
+                )
 
     def compare_bloggers_information(self):
         bloggers_with_new_events = {}

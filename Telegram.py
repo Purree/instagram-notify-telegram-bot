@@ -8,7 +8,7 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandle
 
 from Config import Config
 from Debug import Debug
-from Instagram import Instagram
+from InstagramHandler import InstagramHandler
 from UserController import UserController
 
 
@@ -25,7 +25,7 @@ class Telegram:
         self.updater.start_polling()
 
         # Initialize new posts handler
-        Instagram(Config().get_all_section_parameters("INSTAGRAM"), self)
+        InstagramHandler(Config().get_all_section_parameters("INSTAGRAM"), self)
 
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         self.updater.idle()
@@ -102,7 +102,7 @@ class Telegram:
 
         update.message.reply_text('Список ваших подписок:\n' +
                                   subscriptions_list +
-                                  "Чтобы отписаться пришлите цифры в скобочках"
+                                  "Чтобы отписаться напишите /unsub + цифры в скобочках"
                                   if subscriptions_list != "" else
                                   "У вас нет подписок",
                                   reply_markup=self.generate_keyboard(),
@@ -148,24 +148,35 @@ class Telegram:
         update.message.reply_text(error_text, reply_markup=self.generate_keyboard())
 
     def send_new_posts_message(self, blogger_with_subscribers):
-        asyncio.run(self._send_new_posts_message(blogger_with_subscribers))
+        receivers_ids = [blogger_data[4] for blogger_data in blogger_with_subscribers]
+        blogger_short_name = blogger_with_subscribers[0][1]
+
+        self.debug.dump(receivers_ids, "получили сообщения о новом посте у", blogger_short_name)
+
+        asyncio.run(
+            self._send_message_to_many_users("У пользователя %s новый пост" % blogger_short_name, receivers_ids))
+
+    def send_new_stories_message(self, blogger_with_subscribers):
+        receivers_ids = [blogger_data[4] for blogger_data in blogger_with_subscribers]
+        blogger_short_name = blogger_with_subscribers[0][1]
+
+        self.debug.dump(receivers_ids, "получили сообщения о новой сторис у", blogger_short_name)
+
+        asyncio.run(
+            self._send_message_to_many_users("У пользователя %s новая сторис" % blogger_short_name, receivers_ids))
 
     def send_custom_message(self, message_text, receiver_id):
         asyncio.run(self._send_message_to_user_async(message_text, receiver_id))
 
-    async def _send_new_posts_message(self, blogger_with_subscribers):
+    async def _send_message_to_many_users(self, message_text: str, receivers_ids: list):
         async with aiohttp.ClientSession() as session:
             tasks = []
 
-            for blogger_data in blogger_with_subscribers:
-                tasks.append(asyncio.ensure_future(
-                    self._send_message_to_user_async(
-                        "У пользователя %s новый пост" % blogger_data[1], blogger_data[4]))
-                )
+            for receiver_id in receivers_ids:
+                tasks.append(asyncio.ensure_future(self._send_message_to_user_async(message_text, receiver_id)))
 
             return await asyncio.gather(*tasks)
 
     async def _send_message_to_user_async(self, message_text, receiver_id):
         self.debug.dump(message_text, receiver_id)
         self.bot.sendMessage(text=message_text, chat_id=receiver_id)
-
