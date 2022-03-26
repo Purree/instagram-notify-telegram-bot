@@ -93,7 +93,8 @@ class Database:
 
     @_use_one_time_connection
     def get_bloggers_with_subscriptions(self, connection=None, cursor=None):
-        cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char) 
+        cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char),
+                          CONVERT(last_story_id, char)
                                       FROM bloggers INNER JOIN user_subscriptions ON instagram_id = blogger_id""")
 
         return cursor.fetchall()
@@ -103,7 +104,7 @@ class Database:
         cursor.execute("""SELECT CONVERT(instagram_id, char), short_name, posts_count, CONVERT(last_post_id, char),  
                                       user_subscriptions.user_id
                                       FROM bloggers INNER JOIN user_subscriptions ON instagram_id = blogger_id 
-                                      WHERE instagram_id = %s""", [blogger_id])
+                                      WHERE instagram_id = %s""", [f'{blogger_id}'])
 
         return cursor.fetchall()
 
