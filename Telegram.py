@@ -3,7 +3,7 @@ import re
 
 import aiohttp
 import telegram
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, InputMediaPhoto, InputMediaVideo
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
 from Config import Config
@@ -73,6 +73,17 @@ class Telegram:
         # Unknown command
         self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.all, self.write_unknown_command_exception))
+
+        # raise Exception('УДАЛИТЬ')
+        # self.bot.send_media_group(chat_id=290172175,
+        #                           media=[InputMediaPhoto(
+        #                               'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg',
+        #                               'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg'),
+        #                               InputMediaPhoto(
+        #                                   'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg',
+        #                                   'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg'),
+        #                               InputMediaVideo('https://instagram.fhrk1-1.fna.fbcdn.net/v/t50.2886-16/10000000_1026174468295950_8589336901305358124_n.mp4?_nc_ht=instagram.fhrk1-1.fna.fbcdn.net&_nc_cat=106&_nc_ohc=vsZKt0auOzAAX8STtmM&edm=ABfd0MgBAAAA&ccb=7-4&oe=6241CA75&oh=00_AT8ea6C_g5lvJ6sqfG_PIkd2GQBZE3fLYDrQbgO76Gm66g&_nc_sid=7bff83')
+        #                           ])
 
     def generate_keyboard(self):
         return ReplyKeyboardMarkup(self.main_keyboard_buttons,
@@ -153,7 +164,7 @@ class Telegram:
 
         self.debug.dump(receivers_ids, "получили сообщения о новом посте у", blogger_short_name)
 
-        asyncio.run(
+        return asyncio.run(
             self._send_message_to_many_users("У пользователя %s новый пост" % blogger_short_name, receivers_ids))
 
     def send_new_stories_message(self, blogger_with_subscribers):
@@ -162,7 +173,7 @@ class Telegram:
 
         self.debug.dump(receivers_ids, "получили сообщения о новой сторис у", blogger_short_name)
 
-        asyncio.run(
+        return asyncio.run(
             self._send_message_to_many_users("У пользователя %s новая сторис" % blogger_short_name, receivers_ids))
 
     def send_custom_message(self, message_text, receiver_id):
@@ -179,4 +190,44 @@ class Telegram:
 
     async def _send_message_to_user_async(self, message_text, receiver_id):
         self.debug.dump(message_text, receiver_id)
-        self.bot.sendMessage(text=message_text, chat_id=receiver_id)
+        return self.bot.sendMessage(text=message_text, chat_id=receiver_id)
+
+    def send_medias(self, medias_data, chat_ids: list, reply_to=None):
+        asyncio.run(self._send_medias(medias_data, chat_ids, reply_to))
+
+    async def _send_medias(self, medias_data, chat_ids: list, reply_to=None):
+        async with aiohttp.ClientSession() as session:
+            medias = asyncio.create_task(self._get_medias(medias_data))
+            tasks = []
+
+            for chat_id in chat_ids:
+                tasks.append(asyncio.ensure_future(self._send_medias_to_user(await medias, chat_id, reply_to)))
+
+            return await asyncio.gather(*tasks)
+
+    async def _get_medias(self, medias_data, media_text=None):
+        medias = []
+
+        for media in medias_data:
+            media = medias_data[media]
+
+            if media['type'] == 'video':
+                medias.append(InputMediaVideo(media['url'], media_text or media['text']))
+
+            if media['type'] == 'image':
+                medias.append(InputMediaPhoto(media['url'], media_text or media['text']))
+
+            if media['type'] == 'sidecar':
+                medias += await self._get_medias(media['attachments'], media['text'])
+
+        return medias
+
+    async def _send_medias_to_user(self, medias, chat_id, reply_to=None):
+        try:
+            print(medias)
+            sent_medias = self.bot.send_media_group(chat_id=chat_id, media=medias, reply_to_message_id=reply_to)
+        except telegram.error.BadRequest:
+            return False
+
+        return sent_medias
+

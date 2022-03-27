@@ -26,7 +26,10 @@ class InstagramHandler:
             blogger_data_with_subscribers = self.controller.get_blogger_subscribers(blogger_id)
 
             if 'post' in users_with_new_posts[blogger_id]:
-                self.telegram.send_new_posts_message(blogger_data_with_subscribers)
+                for message in self.telegram.send_new_posts_message(blogger_data_with_subscribers):
+                    self.telegram.send_medias(users_with_new_posts[blogger_id]['post'][2],
+                                              [message.chat_id],
+                                              message.message_id)
 
                 self.controller.update_blogger_posts_info(
                     users_with_new_posts[blogger_id]['post'][0],
@@ -64,7 +67,8 @@ class InstagramHandler:
                             [
                                 blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count'],
                                 blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node'][
-                                    'id']
+                                    'id'],
+                                self.get_new_posts_data(blogger_info, bloggers[index][3])
                             ]
                     }
 
@@ -95,3 +99,49 @@ class InstagramHandler:
             )
 
         self.controller.delete_blogger(blogger_name)
+
+    def get_new_posts_data(self, blogger_info, last_post_id):
+        if blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count'] == 0:
+            return
+
+        return self.parse_post_data(blogger_info['graphql']['user']['edge_owner_to_timeline_media'], last_post_id)
+
+    def parse_post_data(self, posts, last_post_id, new_posts=None):
+        if new_posts is None:
+            new_posts = {}
+
+        for post in posts['edges']:
+            post = post['node']
+
+            if post['id'] <= last_post_id:
+                break
+
+            new_posts[post['id']] = {}
+
+            if 'video' in post['__typename'].lower():
+                new_posts[post['id']]['type'] = 'video'
+                new_posts[post['id']]['text'] = post['edge_media_to_caption']['edges'][0]['node']['text'] \
+                    if post['edge_media_to_caption']['edges'] != [] \
+                    else ''
+                new_posts[post['id']]['url'] = post['video_url']
+                new_posts[post['id']]['image_url'] = post['display_url']
+
+            if 'image' in post['__typename'].lower():
+                new_posts[post['id']]['type'] = 'image'
+                new_posts[post['id']]['text'] = post['edge_media_to_caption']['edges'][0]['node']['text'] \
+                    if 'edge_media_to_caption' in post and post['edge_media_to_caption']['edges'] != [] \
+                    else ''
+                new_posts[post['id']]['url'] = post['display_url']
+
+            if 'sidecar' in post['__typename'].lower():
+                new_posts[post['id']]['type'] = 'sidecar'
+                new_posts[post['id']]['text'] = post['edge_media_to_caption']['edges'][0]['node']['text'] \
+                    if 'edge_media_to_caption' in post and post['edge_media_to_caption']['edges'] != [] \
+                    else ''
+
+                new_posts[post['id']]['attachments'] = {}
+
+                self.parse_post_data(post['edge_sidecar_to_children'], last_post_id,
+                                     new_posts[post['id']]['attachments'])
+
+        return new_posts
