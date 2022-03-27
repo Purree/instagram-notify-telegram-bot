@@ -2,6 +2,7 @@ import asyncio
 import re
 
 import aiohttp
+import numpy as np
 import telegram
 from telegram import Update, ReplyKeyboardMarkup, InputMediaPhoto, InputMediaVideo
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
@@ -193,15 +194,21 @@ class Telegram:
         return self.bot.sendMessage(text=message_text, chat_id=receiver_id)
 
     def send_medias(self, medias_data, chat_ids: list, reply_to=None):
-        asyncio.run(self._send_medias(medias_data, chat_ids, reply_to))
+        medias = asyncio.run(self._get_medias(medias_data))
 
-    async def _send_medias(self, medias_data, chat_ids: list, reply_to=None):
+        if len(medias) > 10:
+            medias_split = self.split_array(medias, 10)
+            for media in medias_split:
+                asyncio.run(self._send_medias(media, chat_ids, reply_to))
+        else:
+            asyncio.run(self._send_medias(medias, chat_ids, reply_to))
+
+    async def _send_medias(self, medias, chat_ids: list, reply_to=None):
         async with aiohttp.ClientSession() as session:
-            medias = asyncio.create_task(self._get_medias(medias_data))
             tasks = []
 
             for chat_id in chat_ids:
-                tasks.append(asyncio.ensure_future(self._send_medias_to_user(await medias, chat_id, reply_to)))
+                tasks.append(asyncio.ensure_future(self._send_medias_to_user(medias, chat_id, reply_to)))
 
             return await asyncio.gather(*tasks)
 
@@ -224,10 +231,17 @@ class Telegram:
 
     async def _send_medias_to_user(self, medias, chat_id, reply_to=None):
         try:
-            print(medias)
             sent_medias = self.bot.send_media_group(chat_id=chat_id, media=medias, reply_to_message_id=reply_to)
-        except telegram.error.BadRequest:
+        except telegram.error.BadRequest as error:
+            self.debug.dump(error)
             return False
 
         return sent_medias
+
+    def split_array(self, array, chunk_size):
+        chunked_list = list()
+        for i in range(0, len(array), chunk_size):
+            chunked_list.append(array[i:i+chunk_size])
+
+        return chunked_list
 
