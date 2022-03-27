@@ -38,7 +38,10 @@ class InstagramHandler:
                 )
 
             if 'story' in users_with_new_posts[blogger_id]:
-                self.telegram.send_new_stories_message(blogger_data_with_subscribers)
+                for message in self.telegram.send_new_stories_message(blogger_data_with_subscribers):
+                    self.telegram.send_medias(users_with_new_posts[blogger_id]['story'][1],
+                                              [message.chat_id],
+                                              message.message_id)
 
                 self.controller.update_blogger_stories_info(
                     users_with_new_posts[blogger_id]['story'][0],
@@ -59,8 +62,8 @@ class InstagramHandler:
 
             # If count of posts != 0 and last post id > last saved post id
             if blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count'] != 0 and \
-                    blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] > \
-                    bloggers[index][3]:
+                    int(blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id']) > \
+                    int(bloggers[index][3]):
                 bloggers_with_new_events[(self.controller.get_blogger_id(blogger_data=blogger_info))] = \
                     {
                         "post":
@@ -78,14 +81,15 @@ class InstagramHandler:
 
             # If count of stories != 0 and last story id > last saved story id
             if blogger_stories['items'] != [] and \
-                    self.controller.get_last_blogger_story_id_from_data(blogger_stories) > bloggers[index][4]:
+                    int(self.controller.get_last_blogger_story_id_from_data(blogger_stories)) > int(bloggers[index][4]):
                 blogger_id = blogger_stories['id']
                 if blogger_id not in bloggers_with_new_events:
                     bloggers_with_new_events[blogger_id] = {}
 
                 bloggers_with_new_events[blogger_id]['story'] = \
                     [
-                        self.controller.get_last_blogger_story_id_from_data(blogger_stories)
+                        self.controller.get_last_blogger_story_id_from_data(blogger_stories),
+                        self.get_new_stories_data(blogger_stories, bloggers[index][4])
                     ]
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
@@ -113,7 +117,7 @@ class InstagramHandler:
         for post in posts['edges']:
             post = post['node']
 
-            if post['id'] <= last_post_id:
+            if int(post['id']) <= int(last_post_id):
                 break
 
             new_posts[post['id']] = {}
@@ -145,3 +149,33 @@ class InstagramHandler:
                                      new_posts[post['id']]['attachments'])
 
         return new_posts
+
+    def get_new_stories_data(self, blogger_stories, last_story_id):
+        if not blogger_stories['items']:
+            return
+
+        return self.parse_stories_data(blogger_stories, last_story_id)
+
+    def parse_stories_data(self, blogger_stories, last_story_id):
+        new_stories = {}
+
+        for story in blogger_stories['items']:
+            story_id = story['id'].split('_')[0]
+
+            if int(story_id) <= int(last_story_id):
+                break
+
+            new_stories[story_id] = {}
+
+            if story['media_type'] == 2:  # 2 - video
+                new_stories[story_id]['type'] = 'video'
+                new_stories[story_id]['text'] = ''
+                new_stories[story_id]['url'] = story['video_versions']['candidates'][0]['url']
+                new_stories[story_id]['image_url'] = story['image_versions2']['candidates'][0]['url']
+
+            if story['media_type'] == 1:  # 1 - image
+                new_stories[story_id]['type'] = 'image'
+                new_stories[story_id]['text'] = ''
+                new_stories[story_id]['url'] = story['image_versions2']['candidates'][0]['url']
+
+        return new_stories
