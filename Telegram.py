@@ -1,5 +1,6 @@
 import asyncio
 import re
+import threading
 
 import aiohttp
 import numpy as np
@@ -144,6 +145,9 @@ class Telegram:
                                   self.main_keyboard_buttons[0][0])
 
     def subscribe_user(self, update: Update, context: CallbackContext):
+        threading.Thread(target=self._subscribe_user, args=([update, context])).start()
+
+    def _subscribe_user(self, update: Update, context: CallbackContext):
         blogger_short_name = \
             re.match(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)',
                      update.message.text).group(1)
