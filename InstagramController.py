@@ -10,6 +10,7 @@ from Debug import Debug
 class InstagramController:
     BLOGGER_DATA_LINK = "https://www.instagram.com/%s/?__a=1"  # %s - blogger short name
     BLOGGER_STORIES_LINK = "https://i.instagram.com/api/v1/feed/user/%s/reel_media/"
+    BLOGGER_REELS_LINK = "https://i.instagram.com/api/v1/highlights/%s/highlights_tray/"
     BLOGGER_STORIES_USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 105.0.0.11.118 (iPhone11,8; iOS 12_3_1; en_US; en-US; scale=2.00; 828x1792; 165586599)"
 
     def __init__(self):
