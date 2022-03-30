@@ -198,6 +198,9 @@ class Telegram:
         return self.bot.sendMessage(text=message_text, chat_id=receiver_id)
 
     def send_medias(self, medias_data, chat_ids: list, reply_to=None):
+        threading.Thread(target=self._send_medias_thread, args=([medias_data, chat_ids, reply_to])).start()
+
+    def _send_medias_thread(self, medias_data, chat_ids: list, reply_to=None):
         medias = asyncio.run(self._get_medias(medias_data))
 
         if len(medias) > 10:
