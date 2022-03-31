@@ -125,7 +125,7 @@ class InstagramHandler:
             if 'video' in post['__typename'].lower():
                 new_posts[post['id']]['type'] = 'video'
                 new_posts[post['id']]['text'] = post['edge_media_to_caption']['edges'][0]['node']['text'] \
-                    if post['edge_media_to_caption']['edges'] != [] \
+                    if 'edge_media_to_caption' in post and post['edge_media_to_caption']['edges'] != [] \
                     else ''
                 new_posts[post['id']]['url'] = post['video_url']
                 new_posts[post['id']]['image_url'] = post['display_url']
