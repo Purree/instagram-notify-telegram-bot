@@ -25,6 +25,9 @@ class InstagramHandler:
         for blogger_id in users_with_new_posts:
             blogger_data_with_subscribers = self.controller.get_blogger_subscribers(blogger_id)
 
+            if not blogger_data_with_subscribers:
+                return
+
             if 'post' in users_with_new_posts[blogger_id]:
                 for message in self.telegram.send_new_posts_message(blogger_data_with_subscribers):
                     self.telegram.send_medias(users_with_new_posts[blogger_id]['post'][2],
