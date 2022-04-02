@@ -116,6 +116,7 @@ class Database:
     :returns: blogger by both of these values if both are given
     :exception: if no argument were passed
     """
+
     @_use_one_time_connection
     def search_blogger_in_database(self, blogger_short_name=None, blogger_id=None, connection=None, cursor=None):
         if blogger_short_name is None and blogger_id is None:
@@ -164,9 +165,17 @@ class Database:
         if self.search_blogger_in_database(None, blogger_data[0], connection=connection,
                                            cursor=cursor) is not None:
             return False
-        cursor.execute("""INSERT INTO bloggers VALUES (%s, %s, %s, %s, %s)""", blogger_data)
+
+        cursor.execute("""INSERT INTO bloggers VALUES (%s, %s, %s, %s, %s)""",
+                       [f'{blogger_data[0]}', f'{blogger_data[1]}', f'{blogger_data[2]}', f'{blogger_data[3]}',
+                        f'{blogger_data[4]}'])
 
         connection.commit()
+
+        if blogger_data[5] is not {}:
+            for album_id in blogger_data[5]:
+                self.add_reel_to_blogger(blogger_data[0], album_id, blogger_data[5][album_id], connection, cursor)
+
         return True
 
     @_use_one_time_connection
@@ -243,6 +252,30 @@ class Database:
         cursor.execute("""UPDATE instagram_notify.bloggers
             SET last_story_id = %s
             WHERE instagram_id = %s;""", [last_story_id, f'{blogger_id}'])
+
+        connection.commit()
+        return cursor.rowcount
+
+    @_use_one_time_connection
+    def add_reel_to_blogger(self, blogger_id, album_id, reel_id, connection=None, cursor=None):
+        cursor.execute("""INSERT INTO blogger_reels VALUES (%s, %s, %s)""",
+                       [f'{blogger_id}', f'{album_id}', f'{reel_id}'])
+
+        connection.commit()
+
+    @_use_one_time_connection
+    def update_reel_id_in_album(self, blogger_id, album_id, reel_id, connection=None, cursor=None):
+        cursor.execute("""UPDATE blogger_reels
+                    SET last_reel_id = %s
+                    WHERE album_id = %s AND blogger_id = %s;""", [f'{reel_id}', f'{album_id}', f'{blogger_id}'])
+
+        connection.commit()
+        return cursor.rowcount
+
+    @_use_one_time_connection
+    def delete_reels_album(self, blogger_id, album_id, connection=None, cursor=None):
+        cursor.execute("""DELETE FROM blogger_reels WHERE album_id = %s AND blogger_id = %s;""",
+                       [f'{album_id}', f'{blogger_id}'])
 
         connection.commit()
         return cursor.rowcount

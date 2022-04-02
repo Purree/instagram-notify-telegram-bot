@@ -58,7 +58,7 @@ database.execute_custom_query('CREATE TABLE bloggers ('
                               ')')
 
 database.execute_custom_query('CREATE TABLE blogger_reels ('
-                              'blogger_id BIGINT UNSIGNED PRIMARY KEY NOT NULL,'
+                              'blogger_id BIGINT UNSIGNED NOT NULL,'
                               'album_id BIGINT DEFAULT 0 NOT NULL,'
                               'last_reel_id BIGINT DEFAULT 0 NOT NULL'
                               ')')

@@ -76,17 +76,6 @@ class Telegram:
         self.updater.dispatcher \
             .add_handler(MessageHandler(Filters.all, self.write_unknown_command_exception))
 
-        # raise Exception('УДАЛИТЬ')
-        # self.bot.send_media_group(chat_id=290172175,
-        #                           media=[InputMediaPhoto(
-        #                               'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg',
-        #                               'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg'),
-        #                               InputMediaPhoto(
-        #                                   'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg',
-        #                                   'https://s0.rbk.ru/v6_top_pics/media/img/4/74/756256715374744.jpg'),
-        #                               InputMediaVideo('https://instagram.fhrk1-1.fna.fbcdn.net/v/t50.2886-16/10000000_1026174468295950_8589336901305358124_n.mp4?_nc_ht=instagram.fhrk1-1.fna.fbcdn.net&_nc_cat=106&_nc_ohc=vsZKt0auOzAAX8STtmM&edm=ABfd0MgBAAAA&ccb=7-4&oe=6241CA75&oh=00_AT8ea6C_g5lvJ6sqfG_PIkd2GQBZE3fLYDrQbgO76Gm66g&_nc_sid=7bff83')
-        #                           ])
-
     def generate_keyboard(self):
         return ReplyKeyboardMarkup(self.main_keyboard_buttons,
                                    one_time_keyboard=False,

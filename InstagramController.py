@@ -77,6 +77,30 @@ class InstagramController:
     def get_stories_of_many_bloggers(self, blogger_ids):
         return asyncio.run(self._get_stories_of_many_bloggers(blogger_ids))
 
+    async def _get_blogger_reels(self, session, blogger_id):
+        async with session.get(self.BLOGGER_REELS_LINK % blogger_id, proxy=self.proxy,
+                               headers={
+                                   'User-Agent': self.BLOGGER_STORIES_USER_AGENT
+                               },
+                               cookies={
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+            return await response.json()
+
+    async def _get_reels_of_many_bloggers(self, blogger_ids):
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+
+            for blogger_id in blogger_ids:
+                tasks.append(asyncio.ensure_future(self._get_blogger_reels(session, blogger_id)))
+
+            return await asyncio.gather(*tasks)
+
+    def get_blogger_reels(self, blogger_id):
+        return asyncio.run(self._get_reels_of_many_bloggers([blogger_id]))[0]
+
+    def get_reels_of_many_bloggers(self, blogger_ids):
+        return asyncio.run(self._get_reels_of_many_bloggers(blogger_ids))
+
     def get_bloggers_with_subscriptions(self):
         return self.database.get_bloggers_with_subscriptions()
 

@@ -31,20 +31,28 @@ class UserController:
             if blogger_info == {}:
                 return FunctionResult.error('Такого пользователя не существует или его аккаунт закрыт')
 
+            blogger_id = self.instagram_controller.get_blogger_id(blogger_data=blogger_info)
+
             posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
             last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
                 if posts_count != 0 else 0
             last_story_id = self.instagram_controller.get_last_blogger_story_id_from_data(
-                self.instagram_controller.get_blogger_stories(
-                    self.instagram_controller.get_blogger_id(blogger_data=blogger_info))
+                self.instagram_controller.get_blogger_stories(blogger_id)
             )
+
+            raw_reels_data = self.instagram_controller.get_blogger_reels(blogger_id)
+            reels_data = {}
+
+            for reel in raw_reels_data['tray']:
+                reels_data[reel['id'].split('highlight:')[1]] = reel['latest_reel_media']
 
             blogger_data = [
                 self.instagram_controller.get_blogger_id(blogger_data=blogger_info),
                 blogger_short_name,
                 posts_count,
                 last_post_id,
-                last_story_id
+                last_story_id,
+                reels_data
             ]
             self.database.add_new_blogger(blogger_data)
 
