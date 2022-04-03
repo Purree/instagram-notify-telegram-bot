@@ -101,6 +101,12 @@ class InstagramController:
     def get_reels_of_many_bloggers(self, blogger_ids):
         return asyncio.run(self._get_reels_of_many_bloggers(blogger_ids))
 
+    def get_reel_album_id(self, reel_data):
+        return reel_data['id'].split('highlight:')[1]
+
+    def get_saved_blogger_reels(self, blogger_id):
+        return self.database.get_blogger_reels(blogger_id)
+
     def get_bloggers_with_subscriptions(self):
         return self.database.get_bloggers_with_subscriptions()
 

@@ -44,7 +44,9 @@ class UserController:
             reels_data = {}
 
             for reel in raw_reels_data['tray']:
-                reels_data[reel['id'].split('highlight:')[1]] = reel['latest_reel_media']
+                reels_data[
+                    self.instagram_controller.get_reel_album_id(reel)
+                ] = reel['latest_reel_media']
 
             blogger_data = [
                 self.instagram_controller.get_blogger_id(blogger_data=blogger_info),

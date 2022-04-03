@@ -95,6 +95,37 @@ class InstagramHandler:
                         self.get_new_stories_data(blogger_stories, bloggers[index][4])
                     ]
 
+        # Get blogger reels
+        for index, blogger_reels in enumerate(
+                self.controller.get_reels_of_many_bloggers([blogger[0] for blogger in bloggers])):
+
+            if not blogger_reels['tray']:
+                continue
+
+            saved_reels = self.controller.get_saved_blogger_reels(bloggers[index][0])
+
+            new_reels = {}
+            for reel in blogger_reels['tray']:
+                reel_album_id = self.controller.get_reel_album_id(reel)
+                reel_id = reel['latest_reel_media']
+
+                if reel_album_id not in saved_reels:
+                    new_reels[reel_album_id] = reel_id
+                    continue
+
+                if int(reel_id) > int(saved_reels[reel_album_id]):
+                    new_reels[reel_album_id] = reel_id
+
+                del saved_reels[reel_album_id]
+
+            # TODO: Delete deleted reels, send message about new reels
+            self.debug.dump(new_reels, "- new reels")
+            self.debug.dump(saved_reels, "- deleted reels")
+
+
+
+
+
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
         return bloggers_with_new_events
 

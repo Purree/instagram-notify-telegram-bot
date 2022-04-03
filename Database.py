@@ -279,3 +279,15 @@ class Database:
 
         connection.commit()
         return cursor.rowcount
+
+    @_use_one_time_connection
+    def get_blogger_reels(self, blogger_id, connection=None, cursor=None):
+        cursor.execute("""SELECT * FROM blogger_reels WHERE blogger_id = %s""", [blogger_id])
+
+        raw_reels = cursor.fetchall()
+        reels = {}
+
+        for reel in raw_reels:
+            reels[reel[0]] = reel[1]
+
+        return reels
