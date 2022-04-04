@@ -204,7 +204,9 @@ class InstagramHandler:
             if story['media_type'] == 2:  # 2 - video
                 new_stories[story_id]['type'] = 'video'
                 new_stories[story_id]['text'] = ''
-                new_stories[story_id]['url'] = story['video_versions']['candidates'][0]['url']
+                new_stories[story_id]['url'] = story['video_versions']['candidates'][0]['url'] \
+                    if 'candidates' in story['video_versions'] \
+                    else story['video_versions'][0]['url']
                 new_stories[story_id]['image_url'] = story['image_versions2']['candidates'][0]['url']
 
             if story['media_type'] == 1:  # 1 - image
