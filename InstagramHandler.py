@@ -106,19 +106,19 @@ class InstagramHandler:
 
             new_reels = {}
             for reel in blogger_reels['tray']:
-                reel_album_id = self.controller.get_reel_album_id(reel)
-                reel_id = reel['latest_reel_media']
+                reel_album_id = int(self.controller.get_reel_album_id(reel))
+                reel_id = int(reel['latest_reel_media'])
 
                 if reel_album_id not in saved_reels:
                     new_reels[reel_album_id] = reel_id
                     continue
 
-                if int(reel_id) > int(saved_reels[reel_album_id]):
+                if reel_id > saved_reels[reel_album_id]:
                     new_reels[reel_album_id] = reel_id
 
                 del saved_reels[reel_album_id]
 
-            # TODO: Delete deleted reels, send message about new reels
+            # TODO: Delete deleted reels, send message about new reels, update new reels
             self.debug.dump(new_reels, "- new reels")
             self.debug.dump(saved_reels, "- deleted reels")
 

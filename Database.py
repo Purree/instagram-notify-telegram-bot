@@ -282,12 +282,15 @@ class Database:
 
     @_use_one_time_connection
     def get_blogger_reels(self, blogger_id, connection=None, cursor=None):
-        cursor.execute("""SELECT * FROM blogger_reels WHERE blogger_id = %s""", [blogger_id])
+        cursor.execute(
+            """SELECT CONVERT(`blogger_id`, char), CONVERT(`album_id`, char), CONVERT(`last_reel_id`, char) 
+               FROM blogger_reels WHERE blogger_id = %s""",
+            [blogger_id])
 
         raw_reels = cursor.fetchall()
         reels = {}
 
         for reel in raw_reels:
-            reels[reel[0]] = reel[1]
+            reels[int(reel[1])] = int(reel[2])
 
         return reels
