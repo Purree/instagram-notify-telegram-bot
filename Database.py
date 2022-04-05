@@ -273,9 +273,9 @@ class Database:
         return cursor.rowcount
 
     @_use_one_time_connection
-    def delete_reels_album(self, blogger_id, album_id, connection=None, cursor=None):
-        cursor.execute("""DELETE FROM blogger_reels WHERE album_id = %s AND blogger_id = %s;""",
-                       [f'{album_id}', f'{blogger_id}'])
+    def delete_reels_album(self, album_id, connection=None, cursor=None):
+        cursor.execute("""DELETE FROM blogger_reels WHERE album_id = %s;""",
+                       [f'{album_id}'])
 
         connection.commit()
         return cursor.rowcount

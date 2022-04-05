@@ -60,7 +60,9 @@ database.execute_custom_query('CREATE TABLE bloggers ('
 database.execute_custom_query('CREATE TABLE blogger_reels ('
                               'blogger_id BIGINT UNSIGNED NOT NULL,'
                               'album_id BIGINT DEFAULT 0 NOT NULL,'
-                              'last_reel_id BIGINT DEFAULT 0 NOT NULL'
+                              'last_reel_id BIGINT DEFAULT 0 NOT NULL,'
+                              'FOREIGN KEY (blogger_id)  REFERENCES bloggers (instagram_id)'
+                              'ON DELETE CASCADE'
                               ')')
 
 database.execute_custom_query('CREATE TABLE user_subscriptions ('

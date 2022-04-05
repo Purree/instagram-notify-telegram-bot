@@ -124,3 +124,16 @@ class InstagramController:
 
     def delete_blogger(self, blogger_short_name):
         self.database.delete_blogger(blogger_short_name)
+
+    def delete_many_reels_albums(self, albums_ids):
+        for album_id in albums_ids:
+            self.delete_reel_album(album_id)
+
+    def delete_reel_album(self, album_id):
+        self.database.delete_reels_album(album_id)
+
+    def add_reel_to_blogger(self, blogger_id, album_id, reel_id):
+        self.database.add_reel_to_blogger(blogger_id, album_id, reel_id)
+
+    def update_reel_id_in_album(self, blogger_id, album_id, reel_id):
+        self.database.update_reel_id_in_album(blogger_id, album_id, reel_id)

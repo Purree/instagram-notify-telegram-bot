@@ -102,7 +102,10 @@ class InstagramHandler:
             if not blogger_reels['tray']:
                 continue
 
-            saved_reels = self.controller.get_saved_blogger_reels(bloggers[index][0])
+            blogger_id = bloggers[index][0]
+
+            saved_reels = self.controller.get_saved_blogger_reels(blogger_id)
+            deleted_reels = saved_reels.copy()
 
             new_reels = {}
             for reel in blogger_reels['tray']:
@@ -113,18 +116,24 @@ class InstagramHandler:
                     new_reels[reel_album_id] = reel_id
                     continue
 
-                if reel_id > saved_reels[reel_album_id]:
+                if reel_id > deleted_reels[reel_album_id]:
                     new_reels[reel_album_id] = reel_id
 
-                del saved_reels[reel_album_id]
+                del deleted_reels[reel_album_id]
 
-            # TODO: Delete deleted reels, send message about new reels, update new reels
+            # TODO:  send message about new reels
             self.debug.dump(new_reels, "- new reels")
-            self.debug.dump(saved_reels, "- deleted reels")
+            self.debug.dump(deleted_reels, "- deleted reels")
 
+            # Delete deleted reels
+            self.controller.delete_many_reels_albums(deleted_reels)
 
-
-
+            # Add new reels and update old
+            for new_reel in new_reels:
+                if int(new_reel) in saved_reels:
+                    self.controller.update_reel_id_in_album(blogger_id, new_reel, new_reels[new_reel])
+                else:
+                    self.controller.add_reel_to_blogger(blogger_id, new_reel, new_reels[new_reel])
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
         return bloggers_with_new_events
