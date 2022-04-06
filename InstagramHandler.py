@@ -55,7 +55,20 @@ class InstagramHandler:
         bloggers_with_new_events = {}
         bloggers = self.controller.get_bloggers_with_subscriptions()
 
-        # Get blogger main data
+        self.main_data_handler(bloggers, bloggers_with_new_events)
+
+        self.stories_handler(bloggers, bloggers_with_new_events)
+
+        self.reels_handler(bloggers, bloggers_with_new_events)
+
+        # TODO:  send message about new reels,
+        #  move deleting logic into new_events_handler,
+
+        self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
+
+        return bloggers_with_new_events
+
+    def main_data_handler(self, bloggers, bloggers_with_new_events):
         for index, blogger_info in enumerate(
                 self.controller.get_main_info_of_many_bloggers([blogger[1] for blogger in bloggers])):
 
@@ -78,7 +91,9 @@ class InstagramHandler:
                             ]
                     }
 
-        # Get blogger stories
+        return bloggers_with_new_events
+
+    def stories_handler(self, bloggers, bloggers_with_new_events):
         for index, blogger_stories in enumerate(
                 self.controller.get_stories_of_many_bloggers([blogger[0] for blogger in bloggers])):
 
@@ -86,6 +101,7 @@ class InstagramHandler:
             if blogger_stories['items'] != [] and \
                     int(self.controller.get_last_blogger_story_id_from_data(blogger_stories)) > int(bloggers[index][4]):
                 blogger_id = blogger_stories['id']
+
                 if blogger_id not in bloggers_with_new_events:
                     bloggers_with_new_events[blogger_id] = {}
 
@@ -94,8 +110,10 @@ class InstagramHandler:
                         self.controller.get_last_blogger_story_id_from_data(blogger_stories),
                         self.get_new_stories_data(blogger_stories, bloggers[index][4])
                     ]
+        return bloggers_with_new_events
 
-        # Get blogger reels
+    def reels_handler(self, bloggers, bloggers_with_new_events):
+        new_reels = {}
         for index, blogger_reels in enumerate(
                 self.controller.get_reels_of_many_bloggers([blogger[0] for blogger in bloggers])):
 
@@ -107,21 +125,21 @@ class InstagramHandler:
             saved_reels = self.controller.get_saved_blogger_reels(blogger_id)
             deleted_reels = saved_reels.copy()
 
-            new_reels = {}
             for reel in blogger_reels['tray']:
                 reel_album_id = int(self.controller.get_reel_album_id(reel))
                 reel_id = int(reel['latest_reel_media'])
 
-                if reel_album_id not in saved_reels:
+                if reel_album_id not in saved_reels or reel_id > saved_reels[reel_album_id]:
                     new_reels[reel_album_id] = reel_id
-                    continue
 
-                if reel_id > deleted_reels[reel_album_id]:
-                    new_reels[reel_album_id] = reel_id
+                    if blogger_id not in bloggers_with_new_events:
+                        bloggers_with_new_events[blogger_id] = {}
+
+                    bloggers_with_new_events[blogger_id]['reels'] = new_reels
+                    continue
 
                 del deleted_reels[reel_album_id]
 
-            # TODO:  send message about new reels
             self.debug.dump(new_reels, "- new reels")
             self.debug.dump(deleted_reels, "- deleted reels")
 
@@ -135,7 +153,6 @@ class InstagramHandler:
                 else:
                     self.controller.add_reel_to_blogger(blogger_id, new_reel, new_reels[new_reel])
 
-        self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
         return bloggers_with_new_events
 
     def remove_blogger(self, blogger_id, blogger_name):
