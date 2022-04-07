@@ -170,6 +170,15 @@ class Telegram:
         return asyncio.run(
             self._send_message_to_many_users("У пользователя %s новая сторис" % blogger_short_name, receivers_ids))
 
+    def send_new_reels_message(self, blogger_with_subscribers):
+        receivers_ids = [blogger_data[4] for blogger_data in blogger_with_subscribers]
+        blogger_short_name = blogger_with_subscribers[0][1]
+
+        self.debug.dump(receivers_ids, "получили сообщения о новом reels у", blogger_short_name)
+
+        return asyncio.run(
+            self._send_message_to_many_users("У пользователя %s новый reel" % blogger_short_name, receivers_ids))
+
     def send_custom_message(self, message_text, receiver_id):
         asyncio.run(self._send_message_to_user_async(message_text, receiver_id))
 

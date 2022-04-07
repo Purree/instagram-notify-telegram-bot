@@ -139,4 +139,4 @@ class InstagramController:
         self.database.add_reel_to_blogger(blogger_id, album_id, reel_id)
 
     def update_reel_id_in_album(self, blogger_id, album_id, reel_id):
-        self.database.update_reel_id_in_album(blogger_id, album_id, reel_id)
+        return self.database.update_reel_id_in_album(blogger_id, album_id, reel_id)

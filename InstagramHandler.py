@@ -54,6 +54,15 @@ class InstagramHandler:
                     blogger_id
                 )
 
+            if 'reels' in users_with_new_posts[blogger_id]:
+                if 'new' in users_with_new_posts[blogger_id]['reels']:
+                    self.telegram.send_new_reels_message(blogger_data_with_subscribers)
+
+                    self.update_reels_in_database(users_with_new_posts[blogger_id]['reels']['new'], blogger_id)
+
+                if 'deleted' in users_with_new_posts[blogger_id]['reels']:
+                    self.delete_reels_from_database(users_with_new_posts[blogger_id]['reels']['deleted'])
+
     def compare_bloggers_information(self):
         bloggers_with_new_events = {}
         bloggers = self.controller.get_bloggers_with_subscriptions()
@@ -69,9 +78,6 @@ class InstagramHandler:
             print("Error when trying to connect to Instagram")
         except asyncio.exceptions.TimeoutError:
             print("Timeout on trying to connect to Instagram")
-
-        # TODO:  send message about new reels,
-        #  move deleting logic into new_events_handler
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
 
@@ -154,21 +160,17 @@ class InstagramHandler:
 
                 del deleted_reels[reel_album_id]
 
-            if blogger_id in bloggers_with_new_events:
-                bloggers_with_new_events[blogger_id]['reels'] = new_reels
+            if blogger_id not in bloggers_with_new_events:
+                bloggers_with_new_events[blogger_id] = {}
+
+            bloggers_with_new_events[blogger_id]['reels'] = {}
+            bloggers_with_new_events[blogger_id]['reels']['new'] = new_reels
+            bloggers_with_new_events[blogger_id]['reels']['deleted'] = deleted_reels
+
+
 
             self.debug.dump(new_reels, "- new reels")
             self.debug.dump(deleted_reels, "- deleted reels")
-
-            # Delete deleted reels
-            self.controller.delete_many_reels_albums(deleted_reels)
-
-            # Add new reels and update old
-            for new_reel in new_reels:
-                if int(new_reel) in saved_reels:
-                    self.controller.update_reel_id_in_album(blogger_id, new_reel, new_reels[new_reel])
-                else:
-                    self.controller.add_reel_to_blogger(blogger_id, new_reel, new_reels[new_reel])
 
         return bloggers_with_new_events
 
@@ -258,3 +260,11 @@ class InstagramHandler:
                 new_stories[story_id]['url'] = story['image_versions2']['candidates'][0]['url']
 
         return new_stories
+
+    def delete_reels_from_database(self, deleted_reels):
+        self.controller.delete_many_reels_albums(deleted_reels)
+
+    def update_reels_in_database(self, new_reels, blogger_id):
+        for new_reel in new_reels:
+            if self.controller.update_reel_id_in_album(blogger_id, new_reel, new_reels[new_reel]) == 0:
+                self.controller.add_reel_to_blogger(blogger_id, new_reel, new_reels[new_reel])
