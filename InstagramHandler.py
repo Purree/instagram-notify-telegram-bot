@@ -1,6 +1,8 @@
 import threading
 from datetime import datetime
 
+import aiohttp
+
 from Debug import Debug
 from InstagramController import InstagramController
 
@@ -55,14 +57,17 @@ class InstagramHandler:
         bloggers_with_new_events = {}
         bloggers = self.controller.get_bloggers_with_subscriptions()
 
-        self.main_data_handler(bloggers, bloggers_with_new_events)
+        try:
+            self.main_data_handler(bloggers, bloggers_with_new_events)
 
-        self.stories_handler(bloggers, bloggers_with_new_events)
+            self.stories_handler(bloggers, bloggers_with_new_events)
 
-        self.reels_handler(bloggers, bloggers_with_new_events)
+            self.reels_handler(bloggers, bloggers_with_new_events)
+        except aiohttp.client_exceptions.ClientConnectorError:
+            print("Error when trying to connect to Instagram")
 
         # TODO:  send message about new reels,
-        #  move deleting logic into new_events_handler,
+        #  move deleting logic into new_events_handler
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
 
@@ -129,16 +134,23 @@ class InstagramHandler:
                 reel_album_id = int(self.controller.get_reel_album_id(reel))
                 reel_id = int(reel['latest_reel_media'])
 
-                if reel_album_id not in saved_reels or reel_id > saved_reels[reel_album_id]:
+                if reel_album_id not in saved_reels:
                     new_reels[reel_album_id] = reel_id
 
                     if blogger_id not in bloggers_with_new_events:
                         bloggers_with_new_events[blogger_id] = {}
 
-                    bloggers_with_new_events[blogger_id]['reels'] = new_reels
                     continue
 
+                if reel_id > saved_reels[reel_album_id]:
+                    new_reels[reel_album_id] = reel_id
+
+                    if blogger_id not in bloggers_with_new_events:
+                        bloggers_with_new_events[blogger_id] = {}
+
                 del deleted_reels[reel_album_id]
+
+            bloggers_with_new_events[blogger_id]['reels'] = new_reels
 
             self.debug.dump(new_reels, "- new reels")
             self.debug.dump(deleted_reels, "- deleted reels")
