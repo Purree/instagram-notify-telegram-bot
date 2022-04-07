@@ -1,3 +1,4 @@
+import asyncio
 import threading
 from datetime import datetime
 
@@ -60,11 +61,14 @@ class InstagramHandler:
         try:
             self.main_data_handler(bloggers, bloggers_with_new_events)
 
+            self.reels_handler(bloggers, bloggers_with_new_events)
+
             self.stories_handler(bloggers, bloggers_with_new_events)
 
-            self.reels_handler(bloggers, bloggers_with_new_events)
         except aiohttp.client_exceptions.ClientConnectorError:
             print("Error when trying to connect to Instagram")
+        except asyncio.exceptions.TimeoutError:
+            print("Timeout on trying to connect to Instagram")
 
         # TODO:  send message about new reels,
         #  move deleting logic into new_events_handler
@@ -150,7 +154,8 @@ class InstagramHandler:
 
                 del deleted_reels[reel_album_id]
 
-            bloggers_with_new_events[blogger_id]['reels'] = new_reels
+            if blogger_id in bloggers_with_new_events:
+                bloggers_with_new_events[blogger_id]['reels'] = new_reels
 
             self.debug.dump(new_reels, "- new reels")
             self.debug.dump(deleted_reels, "- deleted reels")

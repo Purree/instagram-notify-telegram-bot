@@ -35,7 +35,8 @@ class InstagramController:
     async def _get_blogger_main_info(self, session, blogger_short_name):
         async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, proxy=self.proxy,
                                cookies={
-                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
+                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_main_info_of_many_bloggers(self, bloggers_short_names):
@@ -59,7 +60,8 @@ class InstagramController:
                                    'User-Agent': self.BLOGGER_STORIES_USER_AGENT
                                },
                                cookies={
-                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
+                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_stories_of_many_bloggers(self, blogger_ids):
@@ -83,7 +85,8 @@ class InstagramController:
                                    'User-Agent': self.BLOGGER_STORIES_USER_AGENT
                                },
                                cookies={
-                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")}) as response:
+                                   "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
+                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_reels_of_many_bloggers(self, blogger_ids):
