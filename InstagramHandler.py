@@ -55,12 +55,12 @@ class InstagramHandler:
                 )
 
             if 'reels' in users_with_new_posts[blogger_id]:
-                if 'new' in users_with_new_posts[blogger_id]['reels']:
+                if users_with_new_posts[blogger_id]['reels']['new'] != {}:
                     self.telegram.send_new_reels_message(blogger_data_with_subscribers)
 
                     self.update_reels_in_database(users_with_new_posts[blogger_id]['reels']['new'], blogger_id)
 
-                if 'deleted' in users_with_new_posts[blogger_id]['reels']:
+                if users_with_new_posts[blogger_id]['reels']['deleted'] != {}:
                     self.delete_reels_from_database(users_with_new_posts[blogger_id]['reels']['deleted'])
 
     def compare_bloggers_information(self):
