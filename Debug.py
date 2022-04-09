@@ -17,3 +17,6 @@ class Debug:
     def dump_and_die(self, value):
         if self.debug_state:
             raise Exception(value)
+
+    def error_handler(self, *error):
+        print("\033[91m {}\033[00m".format(" ".join(error)))

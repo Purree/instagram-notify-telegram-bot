@@ -75,9 +75,9 @@ class InstagramHandler:
             self.stories_handler(bloggers, bloggers_with_new_events)
 
         except aiohttp.client_exceptions.ClientConnectorError:
-            print("Error when trying to connect to Instagram")
+            self.debug.error_handler("Error when trying to connect to Instagram")
         except asyncio.exceptions.TimeoutError:
-            print("Timeout on trying to connect to Instagram")
+            self.debug.error_handler("Timeout on trying to connect to Instagram")
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
 

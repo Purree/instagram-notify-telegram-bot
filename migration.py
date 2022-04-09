@@ -1,5 +1,6 @@
 from Config import Config
 from Database import Database
+from Debug import Debug
 
 config = Config()
 
@@ -15,7 +16,7 @@ try:
     full_access_database = Database(database_parameters_without_database)
     full_access_database.execute_custom_query('CREATE DATABASE IF NOT EXISTS ' + database_parameters['databasename'])
 except Exception as e:
-    print('Cannot create database:', e)
+    Debug().error_handler('Cannot create database:', e)
 else:
     del full_access_database, database_parameters_without_database
 
