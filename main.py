@@ -3,6 +3,8 @@ from Debug import Debug
 from Telegram import Telegram
 
 if __name__ == "__main__":
+    print('Start script')
+
     try:
         config = Config()
 

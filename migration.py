@@ -2,6 +2,8 @@ from Config import Config
 from Database import Database
 from Debug import Debug
 
+print('Start migration')
+
 config = Config()
 
 database_parameters = config.get_all_section_parameters("DATABASE")

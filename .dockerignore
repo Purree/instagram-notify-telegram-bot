@@ -1,4 +1,4 @@
-config.cfg
 .idea
 database
 .git
+.env

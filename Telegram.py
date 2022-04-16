@@ -1,6 +1,7 @@
 import asyncio
 import re
 import threading
+import platform
 
 import aiohttp
 import numpy as np
@@ -29,7 +30,8 @@ class Telegram:
         # Initialize new posts handler
         InstagramHandler(Config().get_all_section_parameters("INSTAGRAM"), self)
 
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        if platform.system() == 'Windows':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         self.updater.idle()
 
     def start_command_handler(self, update: Update, context: CallbackContext) -> None:

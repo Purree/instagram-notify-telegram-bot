@@ -7,3 +7,12 @@ This project send message to telegram then subscribed by user blogger post new p
 3. Copy config.example.cfg file and delete "example" from its name.
 4. In config.cfg write data as indicated there.
 5. Run "python migration.py" in cmd.
+
+
+<h3>If you use Docker</h3>
+1. Copy config.example.cfg file and delete "example" from its name.
+2. Copy .env.example file and delete "example" from its name.
+3. In config.cfg and .env write data as indicated there.
+4. Copy db data into ./database/mysql if you have it else skip this step.
+5. Run `docker-compose up -d`.
+6. Run `docker-compose exec notifier-app bash`.
