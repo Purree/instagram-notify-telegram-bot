@@ -13,5 +13,4 @@ RUN apt-get update \
 
 COPY . .
 
-CMD [ "python", "migration.py"]
 CMD [ "python", "main.py"]

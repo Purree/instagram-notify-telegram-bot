@@ -15,4 +15,6 @@ This project send message to telegram then subscribed by user blogger post new p
 3. In config.cfg and .env write data as indicated there.
 4. Copy db data into ./database/mysql if you have it else skip this step.
 5. Run `docker-compose up -d`.
-6. Run `docker-compose exec notifier-app bash`.
+6. *Do it if you skip 3 step* 
+   1. Run `docker-compose exec notifier-app bash`.
+   2. Run `python migration.py`.
