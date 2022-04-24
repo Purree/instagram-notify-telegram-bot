@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import asyncio
+
 from Database import Database
 from Config import Config
 from FunctionResult import FunctionResult
@@ -25,6 +27,8 @@ class UserController:
 
         blogger_data = self.database.search_blogger_in_database(blogger_short_name)
 
+        function_result = FunctionResult.success()
+
         if blogger_data is None:
             blogger_info = self.instagram_controller.get_blogger_main_info(blogger_short_name)
 
@@ -34,13 +38,25 @@ class UserController:
             blogger_id = self.instagram_controller.get_blogger_id(blogger_data=blogger_info)
 
             posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
+
             last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
                 if posts_count != 0 else 0
-            last_story_id = self.instagram_controller.get_last_blogger_story_id_from_data(
-                self.instagram_controller.get_blogger_stories(blogger_id)
-            )
 
-            raw_reels_data = self.instagram_controller.get_blogger_reels(blogger_id)
+            try:
+                last_story_id = self.instagram_controller.get_last_blogger_story_id_from_data(
+                    self.instagram_controller.get_blogger_stories(blogger_id)
+                )
+            except asyncio.TimeoutError:
+                function_result.error('Не удалось получить доступ к историям пользователя. ')
+                last_story_id = 0
+
+            try:
+                raw_reels_data = self.instagram_controller.get_blogger_reels(blogger_id)
+            except asyncio.TimeoutError:
+                function_result.error(
+                    function_result.errorMessage + 'Не удалось получить доступ к reels пользователя. ')
+                raw_reels_data = {'tray': []}
+
             reels_data = {}
 
             for reel in raw_reels_data['tray']:
@@ -59,6 +75,13 @@ class UserController:
             self.database.add_new_blogger(blogger_data)
 
         user_subscription = self.database.subscribe_user(telegram_id, blogger_data[0])
+
+        if not function_result.isSuccess:
+            function_result.error(
+                function_result.errorMessage + 'Однако нам удалось подписать Вас на пользователя. '
+                                               'Вам придёт сообщение, когда мы сможем получить доступ к недоступной '
+                                               'на данный момент информации')
+            return function_result
 
         return FunctionResult.success(blogger_short_name) \
             if user_subscription.isSuccess \

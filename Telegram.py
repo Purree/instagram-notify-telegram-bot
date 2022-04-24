@@ -138,12 +138,16 @@ class Telegram:
     def subscribe_user(self, update: Update, context: CallbackContext):
         threading.Thread(target=self._subscribe_user, args=([update, context])).start()
 
+
     def _subscribe_user(self, update: Update, context: CallbackContext):
         blogger_short_name = \
             re.match(r'(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)',
                      update.message.text).group(1)
-
-        user_subscription = self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
+        try:
+            user_subscription = self.controller.subscribe_user(update.message.from_user.id, blogger_short_name)
+        except Exception as e:
+            self.send_error_message(update, 'В данный момент не удаётся получить информацию, попробуйте позже.')
+            raise Exception(e)
 
         if not user_subscription.isSuccess:
             self.send_error_message(update, user_subscription.errorMessage)

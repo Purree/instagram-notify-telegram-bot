@@ -10,12 +10,12 @@ class Debug:
         if (type(debug_state) == bool and debug_state) or (type(debug_state) == str and debug_state.lower() == "true"):
             self.debug_state = True
 
-        file_name = './logs/app.log'
-        if not os.path.exists(file_name):
-            os.makedirs("/".join(file_name.split('/')[:-1]))
-            with open(file_name, 'w'): pass
+        file_path = './logs/'
+        file_name = 'app.log'
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
 
-        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", filename=file_name)
+        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", filename=file_path+file_name)
 
     def dump(self, *params):
         if self.debug_state:
