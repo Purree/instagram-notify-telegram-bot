@@ -2,3 +2,4 @@ config.cfg
 .idea
 database
 .env
+/logs/

@@ -2,3 +2,4 @@
 database
 .git
 .env
+/logs/
