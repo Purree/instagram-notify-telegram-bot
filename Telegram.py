@@ -189,7 +189,7 @@ class Telegram:
         asyncio.run(self._send_message_to_user_async(message_text, receiver_id))
 
     async def _send_message_to_many_users(self, message_text: str, receivers_ids: list):
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             tasks = []
 
             for receiver_id in receivers_ids:
@@ -215,7 +215,7 @@ class Telegram:
             asyncio.run(self._send_medias(medias, chat_ids, reply_to))
 
     async def _send_medias(self, medias, chat_ids: list, reply_to=None):
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             tasks = []
 
             for chat_id in chat_ids:

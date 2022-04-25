@@ -33,14 +33,14 @@ class InstagramController:
                 )['logging_page_id'].replace('profilePage_', '')
 
     async def _get_blogger_main_info(self, session, blogger_short_name):
-        async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, proxy=self.proxy,
+        async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, ssl=False, proxy=self.proxy,
                                cookies={
                                    "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
                                timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_main_info_of_many_bloggers(self, bloggers_short_names):
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             tasks = []
 
             for blogger_short_name in bloggers_short_names:
@@ -55,7 +55,7 @@ class InstagramController:
         return asyncio.run(self._get_main_info_of_many_bloggers(bloggers_short_names))
 
     async def _get_blogger_stories(self, session, blogger_id):
-        async with session.get(self.BLOGGER_STORIES_LINK % blogger_id, proxy=self.proxy,
+        async with session.get(self.BLOGGER_STORIES_LINK % blogger_id, ssl=False, proxy=self.proxy,
                                headers={
                                    'User-Agent': self.BLOGGER_STORIES_USER_AGENT
                                },
@@ -65,7 +65,7 @@ class InstagramController:
             return await response.json()
 
     async def _get_stories_of_many_bloggers(self, blogger_ids):
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             tasks = []
 
             for blogger_id in blogger_ids:
@@ -80,7 +80,7 @@ class InstagramController:
         return asyncio.run(self._get_stories_of_many_bloggers(blogger_ids))
 
     async def _get_blogger_reels(self, session, blogger_id):
-        async with session.get(self.BLOGGER_REELS_LINK % blogger_id, proxy=self.proxy,
+        async with session.get(self.BLOGGER_REELS_LINK % blogger_id, ssl=False, proxy=self.proxy,
                                headers={
                                    'User-Agent': self.BLOGGER_STORIES_USER_AGENT
                                },
@@ -90,7 +90,7 @@ class InstagramController:
             return await response.json()
 
     async def _get_reels_of_many_bloggers(self, blogger_ids):
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             tasks = []
 
             for blogger_id in blogger_ids:

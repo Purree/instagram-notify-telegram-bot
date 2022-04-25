@@ -232,7 +232,7 @@ class Database:
 
     @_use_one_time_connection
     def update_blogger_posts_info(self, posts_count, last_post_id, blogger_id, connection=None, cursor=None):
-        cursor.execute("""UPDATE instagram_notify.bloggers
+        cursor.execute("""UPDATE bloggers
             SET posts_count  = %s,
             last_post_id = %s
             WHERE instagram_id = %s;""", [posts_count, last_post_id, f'{blogger_id}'])
@@ -249,7 +249,7 @@ class Database:
 
     @_use_one_time_connection
     def update_blogger_stories_info(self, last_story_id, blogger_id, connection=None, cursor=None):
-        cursor.execute("""UPDATE instagram_notify.bloggers
+        cursor.execute("""UPDATE bloggers
             SET last_story_id = %s
             WHERE instagram_id = %s;""", [last_story_id, f'{blogger_id}'])
 
