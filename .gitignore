@@ -3,3 +3,4 @@ config.cfg
 database
 .env
 /logs/
+__pycache__/
