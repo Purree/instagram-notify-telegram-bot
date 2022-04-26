@@ -1,9 +1,10 @@
 config~=0.5.1
 telegram~=0.0.1
 configparser~=5.2.0
-mysql-connector-python~=8.0.28
+mysql-connector-python==8.0.29
 asyncio~=3.4.3
 aiohttp~=3.8.1
 requests~=2.27.1
 python-telegram-bot~=13.11
-numpy~=1.21.2
+numpy==1.22.3
+aiohttp_retry~=2.4.6

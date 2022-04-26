@@ -15,7 +15,7 @@ class Debug:
         if not os.path.exists(file_path):
             os.makedirs(file_path)
 
-        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", filename=file_path+file_name)
+        logging.basicConfig(format="\n\n\n%(asctime)s - %(name)s - %(levelname)s - %(message)s", filename=file_path+file_name)
 
     def dump(self, *params):
         if self.debug_state:

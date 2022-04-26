@@ -1,5 +1,8 @@
 import aiohttp
 import asyncio
+
+from aiohttp import TraceConfig
+from aiohttp_retry import RetryClient, ExponentialRetry
 import platform
 
 from Config import Config
@@ -19,9 +22,21 @@ class InstagramController:
         self.proxy = self.config.read_from_config("PROXY", "proxy")
         self.debug = Debug()
 
+        self.trace_config = TraceConfig()
+        self.trace_config.on_request_exception.append(self.on_request_exception)
+
+        self.retry_options = ExponentialRetry(
+            attempts=int(self.config.read_from_config("INSTAGRAM", "requestsreconnectattemptcount")),
+            start_timeout=0.1,
+            max_timeout=int(self.config.read_from_config("INSTAGRAM", "requestsreconnectmaxinterval")),
+            factor=int(self.config.read_from_config("INSTAGRAM", "requestsreconnectinterval")))
+
         if platform.system() == 'Windows':
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         setattr(asyncio.sslproto._SSLProtocolTransport, "_start_tls_compatible", True)
+
+    async def on_request_exception(self, session, trace_config_ctx, params):
+        Debug().error_handler(Exception('Error on request send: ', trace_config_ctx, params))
 
     def get_blogger_id(self, short_name=None, blogger_data=None):
         if short_name is None and blogger_data is None:
@@ -36,11 +51,13 @@ class InstagramController:
         async with session.get(self.BLOGGER_DATA_LINK % blogger_short_name, ssl=False, proxy=self.proxy,
                                cookies={
                                    "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
-                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
+                               timeout=float(
+                                   self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_main_info_of_many_bloggers(self, bloggers_short_names):
-        async with aiohttp.ClientSession(trust_env=True) as session:
+        async with RetryClient(raise_for_status=True, retry_options=self.retry_options,
+                               trace_configs=[self.trace_config]) as session:
             tasks = []
 
             for blogger_short_name in bloggers_short_names:
@@ -61,11 +78,13 @@ class InstagramController:
                                },
                                cookies={
                                    "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
-                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
+                               timeout=float(
+                                   self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_stories_of_many_bloggers(self, blogger_ids):
-        async with aiohttp.ClientSession(trust_env=True) as session:
+        async with RetryClient(raise_for_status=True, retry_options=self.retry_options,
+                               trace_configs=[self.trace_config]) as session:
             tasks = []
 
             for blogger_id in blogger_ids:
@@ -86,11 +105,13 @@ class InstagramController:
                                },
                                cookies={
                                    "sessionid": self.config.read_from_config("INSTAGRAM", "sessionid")},
-                               timeout=float(self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
+                               timeout=float(
+                                   self.config.read_from_config('INSTAGRAM', 'responsetime'))) as response:
             return await response.json()
 
     async def _get_reels_of_many_bloggers(self, blogger_ids):
-        async with aiohttp.ClientSession(trust_env=True) as session:
+        async with RetryClient(raise_for_status=True, retry_options=self.retry_options,
+                               trace_configs=[self.trace_config]) as session:
             tasks = []
 
             for blogger_id in blogger_ids:

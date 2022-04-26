@@ -40,7 +40,8 @@ class UserController:
             posts_count = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['count']
 
             last_post_id = blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'][0]['node']['id'] \
-                if posts_count != 0 else 0
+                if posts_count != 0 and blogger_info['graphql']['user']['edge_owner_to_timeline_media']['edges'] != [] \
+                else 0
 
             try:
                 last_story_id = self.instagram_controller.get_last_blogger_story_id_from_data(
