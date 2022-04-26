@@ -67,21 +67,23 @@ class InstagramHandler:
         bloggers_with_new_events = {}
         bloggers = self.controller.get_bloggers_with_subscriptions()
 
-        try:
-            self.main_data_handler(bloggers, bloggers_with_new_events)
+        self.handle_connection_errors(self.main_data_handler, bloggers, bloggers_with_new_events)
 
-            self.reels_handler(bloggers, bloggers_with_new_events)
+        self.handle_connection_errors(self.reels_handler, bloggers, bloggers_with_new_events)
 
-            self.stories_handler(bloggers, bloggers_with_new_events)
-
-        except aiohttp.client_exceptions.ClientConnectorError:
-            self.debug.error_handler("Error when trying to connect to Instagram")
-        except asyncio.exceptions.TimeoutError:
-            self.debug.error_handler("Timeout on trying to connect to Instagram")
+        self.handle_connection_errors(self.stories_handler, bloggers, bloggers_with_new_events)
 
         self.debug.dump("Bloggers with new data: ", bloggers_with_new_events)
 
         return bloggers_with_new_events
+
+    def handle_connection_errors(self, function, *params):
+        try:
+            function(*params)
+        except aiohttp.client_exceptions.ClientConnectorError:
+            self.debug.error_handler("Error when trying to connect to Instagram")
+        except asyncio.exceptions.TimeoutError:
+            self.debug.error_handler("Timeout on trying to connect to Instagram")
 
     def main_data_handler(self, bloggers, bloggers_with_new_events):
         for index, blogger_info in enumerate(
